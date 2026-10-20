@@ -1,0 +1,2288 @@
+<!doctype html>
+<html lang="my">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Subtitle Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Noto+Sans+Myanmar:wght@400;600;700&family=Noto+Serif+Myanmar:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#f3f1ec;
+        --surface:#ffffff;
+        --surface-2:#faf8f4;
+        --ink:#201d18;
+        --muted:#6f695e;
+        --line:#e2ddd2;
+        --accent:#c77400;
+        --accent-strong:#a35f00;
+        --accent-soft:#fdf0dc;
+        --stage:#0b0b0c;
+        --ok:#177245;
+        --err:#b3261e;
+        --shadow:0 1px 2px rgba(30,25,15,.06),0 8px 24px rgba(30,25,15,.07);
+        --font-ui:'Noto Sans Myanmar','Padauk',system-ui,-apple-system,"Segoe UI",sans-serif;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#121316;
+          --surface:#1c1e22;
+          --surface-2:#22252a;
+          --ink:#edeae3;
+          --muted:#a19c91;
+          --line:#2f3238;
+          --accent:#f2a93b;
+          --accent-strong:#ffc35c;
+          --accent-soft:#33270f;
+          --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+          --ok:#4cc38a;
+          --err:#ff8a80;
+        }
+      }
+      *{box-sizing:border-box}
+      html,body{margin:0;padding:0}
+      body{
+        background:var(--bg);
+        color:var(--ink);
+        font-family:var(--font-ui);
+        font-size:15px;
+        line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+      .wrap{max-width:1240px;margin:0 auto;padding:20px 16px 48px}
+
+      /* ---------- buttons ---------- */
+      .btn{
+        display:inline-flex;align-items:center;gap:7px;
+        border:1px solid var(--line);background:var(--surface);color:var(--ink);
+        border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px;
+        transition:border-color .15s,background .15s,transform .05s;white-space:nowrap;
+      }
+      .btn:hover{border-color:var(--accent)}
+      .btn:active{transform:translateY(1px)}
+      .btn:disabled{opacity:.45;cursor:not-allowed}
+      .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+      @media (prefers-color-scheme: dark){.btn.primary{color:#221a08}}
+      .btn.primary:hover{background:var(--accent-strong)}
+      .btn.danger:hover{border-color:var(--err);color:var(--err)}
+      .btn.small{padding:5px 10px;font-size:13px;border-radius:7px}
+      .btn svg{width:16px;height:16px;flex:none}
+      .icon-btn{
+        display:inline-flex;align-items:center;justify-content:center;
+        width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+        background:var(--surface);cursor:pointer;flex:none;
+      }
+      .icon-btn:hover{border-color:var(--accent)}
+      .icon-btn svg{width:18px;height:18px}
+
+      /* ---------- dropzone ---------- */
+      #dropzone{
+        margin-top:26px;border:2px dashed var(--line);border-radius:18px;
+        background:var(--surface);padding:56px 24px 48px;text-align:center;cursor:pointer;
+        transition:border-color .15s,background .15s;
+      }
+      #dropzone:hover,#dropzone.drag{border-color:var(--accent);background:var(--accent-soft)}
+      #dropzone .dz-icon{width:54px;height:54px;margin:0 auto 14px;color:var(--accent)}
+      #dropzone h1{font-size:24px;margin:0 0 8px;font-weight:700;line-height:1.35}
+      #dropzone p{margin:0 0 6px;color:var(--muted)}
+      #dropzone .formats{font-size:13px;letter-spacing:.02em}
+      #dropzone .btn{margin-top:18px}
+      .steps{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+      .step{
+        flex:1 1 200px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+        padding:14px 16px;box-shadow:var(--shadow);
+      }
+      .step b{display:block;font-size:14px;margin-bottom:2px}
+      .step span{color:var(--muted);font-size:13px}
+      .step .n{
+        display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+        border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);
+        font-size:12px;font-weight:700;margin-bottom:8px;
+      }
+
+      /* ---------- studio layout ---------- */
+      .studio-grid{display:grid;grid-template-columns:minmax(0,1fr) 402px;gap:18px;align-items:start}
+      @media (max-width:960px){.studio-grid{grid-template-columns:1fr}}
+      .card{
+        background:var(--surface);border:1px solid var(--line);border-radius:14px;
+        box-shadow:var(--shadow);padding:16px;margin-bottom:18px;
+      }
+      .card h2{font-size:15px;margin:0 0 4px;font-weight:700}
+      .card .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+      .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+      .card-head h2{margin:0}
+
+      /* ---------- stage ---------- */
+      .stage{
+        position:relative;background:var(--stage);border-radius:14px;overflow:hidden;
+        box-shadow:var(--shadow);
+      }
+      .stage video{display:block;width:100%;max-height:68vh;background:#000}
+      .sub-overlay{
+        position:absolute;left:50%;top:92%;transform:translate(-50%,-50%);
+        width:max-content;max-width:94%;text-align:center;z-index:3;
+      }
+      .sub-overlay span{
+        display:inline-block;font-weight:700;line-height:1.4;white-space:pre-wrap;
+        text-shadow:0 1px 3px rgba(0,0,0,.8),0 0 10px rgba(0,0,0,.45);
+        cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+      }
+      .sub-overlay span:active{cursor:grabbing}
+      .sub-overlay span.ghost{
+        opacity:.55;outline:1.5px dashed rgba(255,255,255,.75);outline-offset:5px;
+        font-weight:600;
+      }
+      .stage.exporting .sub-overlay span{cursor:default}
+      .sub-overlay span.pill{
+        background:rgba(0,0,0,.58);padding:.1em .38em;border-radius:.22em;
+        -webkit-box-decoration-break:clone;box-decoration-break:clone;
+        text-shadow:none;
+      }
+      #renderCanvas{
+        position:absolute;right:10px;bottom:10px;width:172px;height:auto;z-index:5;
+        border:2px solid var(--accent);border-radius:8px;background:#000;
+      }
+      .render-badge{
+        position:absolute;left:10px;top:10px;z-index:5;background:rgba(0,0,0,.72);color:#fff;
+        font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;display:none;align-items:center;gap:6px;
+      }
+      .render-badge.on{display:inline-flex}
+      .render-badge .dot{width:8px;height:8px;border-radius:50%;background:#ff5147;animation:blink 1.1s infinite}
+      @keyframes blink{50%{opacity:.25}}
+      @media (prefers-reduced-motion: reduce){.render-badge .dot{animation:none}}
+
+      /* ---------- transport ---------- */
+      .transport{
+        display:flex;align-items:center;gap:12px;background:var(--surface);
+        border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+        padding:10px 14px;margin:12px 0 18px;
+      }
+      .transport .time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
+      .transport input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
+      .transport .fname{
+        font-size:13px;color:var(--muted);max-width:220px;overflow:hidden;
+        text-overflow:ellipsis;white-space:nowrap;
+      }
+      @media (max-width:640px){.transport .fname{display:none}}
+
+      /* ---------- forms ---------- */
+      label.flabel{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
+      label.flabel:first-child{margin-top:0}
+      .text-input,.select-input{
+        width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+        padding:9px 11px;font-size:14px;outline:none;
+      }
+      .text-input:focus,.select-input:focus{border-color:var(--accent)}
+      .row{display:flex;gap:10px}
+      .row>*{flex:1}
+      .status{font-size:13px;margin-top:10px;min-height:20px;color:var(--muted)}
+      .status.err{color:var(--err)}
+      .status.ok{color:var(--ok)}
+      .progress{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:10px;display:none}
+      .progress.on{display:block}
+      .progress i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .25s}
+
+      /* segmented control */
+      .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+      .seg button{
+        border:0;background:var(--surface-2);padding:7px 13px;cursor:pointer;font-size:13px;font-weight:600;
+        border-right:1px solid var(--line);color:var(--muted);
+      }
+      .seg button:last-child{border-right:0}
+      .seg button.on{background:var(--accent);color:#fff}
+      @media (prefers-color-scheme: dark){.seg button.on{color:#221a08}}
+
+      .style-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+      @media (max-width:520px){.style-grid{grid-template-columns:1fr}}
+      input[type=range].slider{width:100%;accent-color:var(--accent)}
+      input[type=color]{
+        width:52px;height:36px;border:1px solid var(--line);border-radius:8px;
+        background:var(--surface-2);padding:3px;cursor:pointer;vertical-align:middle;
+      }
+      .swatches{display:inline-flex;gap:6px;margin-left:10px;vertical-align:middle}
+      .swatch{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+      .fontfile-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+      .fontfile-name{font-size:13px;color:var(--muted)}
+      .fontfile-name b{color:var(--ink)}
+
+      /* ---------- cue list ---------- */
+      .cue-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+      .cue-list{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;padding-right:2px}
+      .cue-empty{color:var(--muted);font-size:13.5px;text-align:center;padding:22px 8px;border:1px dashed var(--line);border-radius:10px}
+      .cue{
+        border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:9px 10px;
+      }
+      .cue.active{border-color:var(--accent);background:var(--accent-soft)}
+      .cue-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+      .cue-idx{font-size:12px;font-weight:700;color:var(--muted);width:22px;flex:none}
+      .cue-time{
+        width:66px;border:1px solid var(--line);border-radius:6px;background:var(--surface);
+        padding:4px 6px;font-size:12.5px;font-variant-numeric:tabular-nums;text-align:center;
+      }
+      .cue-time:focus{border-color:var(--accent);outline:none}
+      .cue-arrow{color:var(--muted);font-size:12px;flex:none}
+      .cue-seek{margin-left:auto}
+      .cue-del{color:var(--muted)}
+      .cue-del:hover{color:var(--err);border-color:var(--err)}
+      .cue-text{
+        width:100%;border:1px solid transparent;border-radius:7px;background:transparent;
+        padding:6px 7px;font-size:14.5px;line-height:1.5;resize:vertical;min-height:40px;
+      }
+      .cue-text:focus{border-color:var(--accent);background:var(--surface);outline:none}
+      .mini-btn{
+        display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+        border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer;flex:none;
+      }
+      .mini-btn svg{width:14px;height:14px}
+      .mini-btn:hover{border-color:var(--accent)}
+
+      .export-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+      /* ---------- audio mode + short maker ---------- */
+      .dz-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+      .dz-actions .btn{margin-top:0}
+      .short-cta{
+        margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+        padding:16px 18px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+      }
+      .short-cta-text{flex:1 1 260px}
+      .short-cta-text b{display:block;font-size:15px;margin-bottom:2px}
+      .short-cta-text span{color:var(--muted);font-size:13.5px}
+      .stage.audio-mode video{display:none}
+      #audioStage{position:relative;height:210px}
+      #waveCanvas{position:absolute;inset:0;width:100%;height:100%}
+      #wavePlayhead{position:absolute;top:0;bottom:0;left:0;width:2px;background:var(--accent);opacity:.9;z-index:2}
+      .audio-stage-label{
+        position:absolute;left:12px;top:10px;z-index:2;display:flex;gap:7px;align-items:center;
+        color:#e8e2d6;font-size:12.5px;background:rgba(0,0,0,.5);padding:3px 10px;border-radius:999px;
+        max-width:calc(100% - 24px);
+      }
+      .audio-stage-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .audio-stage-label svg{width:14px;height:14px;flex:none}
+      .short-media-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+      .short-thumb{
+        width:90px;height:160px;border-radius:10px;background:#101012;border:1px solid var(--line);
+        overflow:hidden;display:flex;align-items:center;justify-content:center;color:#8f8a80;
+        font-size:12px;text-align:center;flex:none;line-height:1.5;
+      }
+      .short-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+      .short-preview-wrap{display:flex;justify-content:center;margin:14px 0 4px}
+      #shortCanvas{width:min(300px,84vw);height:auto;border-radius:12px;background:#000;box-shadow:var(--shadow)}
+      .short-transport{display:flex;align-items:center;gap:10px;margin:8px 0 2px}
+      .short-transport input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
+      .short-transport .time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
+      #shortCard{scroll-margin-top:14px}
+      #toast{
+        position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+        background:#22201c;color:#fdfcf9;padding:10px 18px;border-radius:10px;font-size:14px;
+        opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;max-width:88vw;text-align:center;
+        box-shadow:0 10px 30px rgba(0,0,0,.3);
+      }
+      #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+      @media (prefers-color-scheme: dark){#toast{background:#ece8df;color:#1d1a15}}
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+
+      <!-- ======== Empty state / dropzone ======== -->
+      <section id="dropSection">
+        <div id="dropzone" tabindex="0" role="button" aria-label="မီဒီယာ ဖိုင် ရွေးရန်">
+          <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2.5" y="5" width="19" height="14" rx="2.5"/>
+            <path d="M2.5 9.5h19M7 5v14M17 5v14"/>
+            <path d="M10.2 12.6v3M8.7 14.1h3M13.8 12.6h3M13.8 14.8h3"/>
+          </svg>
+          <h1>ဗီဒီယို / အသံဖိုင် တင်ပြီး စာတန်း ထည့်ပါ</h1>
+          <p>ဖိုင်ကို ဒီနေရာမှာ ဆွဲချပါ၊ သို့မဟုတ် နှိပ်ပြီး ရွေးပါ — အသံဖိုင်ပဲ ရှိရင်လည်း စာတန်း ထုတ်လို့ရပါတယ်</p>
+          <p class="formats">Video — MP4 · WebM · MOV · MKV &nbsp;|&nbsp; Audio — MP3 · WAV · M4A · OGG</p>
+          <div class="dz-actions">
+            <button class="btn primary" id="pickVideoBtn" type="button">ဗီဒီယို ရွေးမည်</button>
+            <button class="btn" id="pickAudioBtn" type="button">အသံဖိုင် ရွေးမည်</button>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="n">1</span><b>ဖိုင် တင်</b><span>ဗီဒီယို သို့မဟုတ် အသံဖိုင်ကို ရွေးပါ — အသံဖိုင်ပဲ ဆိုရင်လည်း .srt ထုတ်လို့ရပါတယ်</span></div>
+          <div class="step"><span class="n">2</span><b>AI စာသား ထုတ်</b><span>Gemini က အသံကို စာတန်း အပိုင်းလိုက် အလိုအလျောက် ခွဲပေးမည် — ပြီးရင် ကြိုက်သလို ပြင်နိုင်သည်</span></div>
+          <div class="step"><span class="n">3</span><b>ထုတ်ယူ</b><span>.srt ဖိုင် သီးသန့်၊ စာတန်း မြှုပ်ထားတဲ့ ဗီဒီယို (MP4)၊ သို့မဟုတ် 9:16 Short ဗီဒီယို ထုတ်နိုင်သည်</span></div>
+        </div>
+        <div class="short-cta">
+          <div class="short-cta-text">
+            <b>Short ဗီဒီယို (9:16) ဖန်တီးချင်ပါသလား?</b>
+            <span>အသံဖိုင် အရင် တင်ပါ — ပြီးရင် ပုံ တစ်ပုံ ထည့်ပြီး စာတန်းပါ vertical Short ထုတ်နိုင်ပါပြီ။</span>
+          </div>
+          <button class="btn primary" id="shortCtaBtn" type="button">အသံဖိုင် တင်ပြီး စတင်မည်</button>
+        </div>
+      </section>
+
+      <!-- ======== Studio ======== -->
+      <section id="studio" hidden>
+        <div class="studio-grid">
+          <div class="col-main">
+            <div class="stage" id="stage">
+              <video id="video" playsinline preload="metadata"></video>
+              <div id="audioStage" hidden>
+                <canvas id="waveCanvas"></canvas>
+                <div id="wavePlayhead"></div>
+                <div class="audio-stage-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v11.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg>
+                  <span id="audioStageName"></span>
+                </div>
+              </div>
+              <div class="sub-overlay" id="overlay"><span id="overlayText" title="ဆွဲရွှေ့နိုင်ပါတယ်"></span></div>
+              <div class="render-badge" id="renderBadge"><span class="dot"></span>Render လုပ်နေသည်…</div>
+              <canvas id="renderCanvas" width="320" height="180" hidden></canvas>
+            </div>
+
+            <div class="transport">
+              <button class="icon-btn" id="playBtn" type="button" aria-label="Play / Pause">
+                <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+              </button>
+              <span class="time" id="timeLabel">0:00 / 0:00</span>
+              <input type="range" id="seekBar" min="0" max="0" step="0.05" value="0" aria-label="Seek" />
+              <span class="fname" id="fileName"></span>
+              <button class="btn small" id="newVideoBtn" type="button">ဖိုင် အသစ်</button>
+            </div>
+
+            <section class="card" aria-labelledby="styleH">
+              <h2 id="styleH">စာတန်း ပုံစံ</h2>
+              <p class="sub">ပြောင်းလိုက်တာနဲ့ preview မှာ ချက်ချင်း မြင်ရမည် — export လုပ်တဲ့ ဗီဒီယိုမှာလည်း ဒီပုံစံအတိုင်း ပါမည်။</p>
+              <div class="style-grid">
+                <div>
+                  <label class="flabel" for="fontSelect">ဖောင့်</label>
+                  <select class="select-input" id="fontSelect">
+                    <option value="'Padauk','Noto Sans Myanmar',sans-serif" selected>Padauk</option>
+                    <option value="'Noto Sans Myanmar',sans-serif">Noto Sans Myanmar</option>
+                    <option value="'Noto Serif Myanmar',serif">Noto Serif Myanmar</option>
+                    <option value="Arial,Helvetica,sans-serif">Arial</option>
+                  </select>
+                  <div class="fontfile-row">
+                    <button class="btn small" id="uploadFontBtn" type="button">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 19h16"/></svg>
+                      ကိုယ့်ဖောင့် တင်ရန်
+                    </button>
+                    <span class="fontfile-name" id="fontFileName">TTF · OTF · WOFF · WOFF2</span>
+                    <button class="btn small danger" id="removeFontBtn" type="button" hidden>ဖယ်ရှားမည်</button>
+                  </div>
+                </div>
+                <div>
+                  <label class="flabel" for="sizeRange">အရွယ်အစား — <span id="sizeVal">5.5</span>%</label>
+                  <input type="range" class="slider" id="sizeRange" min="2.5" max="10" step="0.25" value="5.5" />
+                  <label class="flabel">စာသား အရောင်</label>
+                  <div>
+                    <input type="color" id="colorInput" value="#ffffff" aria-label="စာသား အရောင်" />
+                    <span class="swatches">
+                      <button class="swatch" type="button" data-color="#ffffff" style="background:#ffffff" aria-label="အဖြူ"></button>
+                      <button class="swatch" type="button" data-color="#ffd94d" style="background:#ffd94d" aria-label="အဝါ"></button>
+                      <button class="swatch" type="button" data-color="#7be3a8" style="background:#7be3a8" aria-label="အစိမ်း"></button>
+                      <button class="swatch" type="button" data-color="#ffb3c2" style="background:#ffb3c2" aria-label="ပန်း"></button>
+                      <button class="swatch" type="button" data-color="#111111" style="background:#111111" aria-label="အမည်း"></button>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label class="flabel">နေရာ</label>
+                  <div class="seg" id="posSeg">
+                    <button type="button" data-pos="top">အပေါ်</button>
+                    <button type="button" data-pos="middle">အလယ်</button>
+                    <button type="button" data-pos="bottom" class="on">အောက်</button>
+                  </div>
+                  <button class="btn small" id="posResetBtn" type="button" style="margin-left:8px">မူလနေရာ ပြန်ထား</button>
+                  <p class="sub" style="margin:8px 0 0">Preview ပေါ်က စာတန်းကိုလည်း လက်နဲ့ ဆွဲရွှေ့ပြီး ကြိုက်တဲ့နေရာ ထားနိုင်ပါတယ်။ <span id="posVal"></span></p>
+                </div>
+                <div>
+                  <label class="flabel">နောက်ခံ အကွက်</label>
+                  <div class="seg" id="bgSeg">
+                    <button type="button" data-bg="on" class="on">ဖွင့်</button>
+                    <button type="button" data-bg="off">ပိတ်</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="videoExportCard" aria-labelledby="exportH">
+              <h2 id="exportH">စာတန်းပါ ဗီဒီယို ထုတ်ရန်</h2>
+              <p class="sub">စာတန်းကို ဗီဒီယိုထဲ တိုက်ရိုက် မြှုပ်ပြီး MP4 ဖိုင် ထုတ်ပေးမည်။ ဒီ browser က MP4 မထုတ်နိုင်ရင်သာ WebM နဲ့ ထုတ်ပေးမည်ဖြစ်ပြီး အဲဒါဆို စတင်ခင် ကြိုပြောပြပါမည်။</p>
+              <div class="row" style="align-items:center">
+                <button class="btn primary" id="exportBtn" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
+                  ဗီဒီယို Export လုပ်မည်
+                </button>
+                <button class="btn danger" id="cancelExportBtn" type="button" hidden>ရပ်မည်</button>
+              </div>
+              <div class="progress" id="exportProgress"><i></i></div>
+              <p class="status" id="exportStatus" hidden></p>
+              <p class="export-note">Render က ဗီဒီယို အရှည်အတိုင်း အချိန်ယူပြီး ဗီဒီယိုကို တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်လို့ ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ အသံလည်း ပါမည် (browser က ထောက်ပံ့ရင်)။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖော်မတ် ဖြစ်ပါတယ်။ WebM ဖိုင် ထုတ်ပေးရတဲ့ အခါမျိုးမှာသာ ဖုန်းရဲ့ မူရင်း player မှာ အမည်း ပေါ်နေရင် Chrome သို့မဟုတ် VLC app နဲ့ ဖွင့်ကြည့်ပါ။</p>
+            </section>
+
+            <section class="card" id="shortCard" aria-labelledby="shortH">
+              <h2 id="shortH">Short ဗီဒီယို ဖန်တီးရန် (9:16)</h2>
+              <p class="sub">နောက်ခံပုံ တစ်ပုံ + အသံဖိုင် + စာတန်း ပေါင်းပြီး 1080×1920 vertical Short ဗီဒီယို ထုတ်ပေးမည်။ ပုံက ဖြည်းဖြည်းချင်း zoom ဝင်သွားမည် (Ken Burns ပုံစံ)။ စာတန်း ပုံစံနဲ့ နေရာက အပေါ်က “စာတန်း ပုံစံ” setting အတိုင်း သုံးပါမည် — preview ပေါ်မှာ ဆွဲရွှေ့ထားတဲ့ နေရာ အတိုင်း ပါမည်။</p>
+
+              <label class="flabel">နောက်ခံပုံ (9:16)</label>
+              <div class="short-media-row">
+                <div class="short-thumb" id="shortThumb"><span>ပုံ<br />မရှိသေးပါ</span></div>
+                <div style="flex:1;min-width:180px">
+                  <button class="btn small" id="shortImageBtn" type="button">ပုံ တင်မည်</button>
+                  <p class="sub" id="shortImageInfo" style="margin:8px 0 0">ဘယ်အချိုးအစား ပုံဖြစ်ဖြစ် ရပါတယ် — 9:16 မဟုတ်ရင် 1080×1920 ထဲ အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။</p>
+                </div>
+              </div>
+
+              <label class="flabel">အသံဖိုင်</label>
+              <div class="fontfile-row" style="margin-top:0">
+                <button class="btn small" id="shortAudioBtn" type="button">အသံဖိုင် ရွေးမည်</button>
+                <button class="btn small" id="shortUseCurrentBtn" type="button" hidden>လက်ရှိ အသံဖိုင် သုံးမည်</button>
+                <span class="fontfile-name" id="shortAudioInfo">MP3 · WAV · M4A · OGG</span>
+              </div>
+
+              <label class="flabel">စာတန်း ရင်းမြစ်</label>
+              <div class="seg" id="shortSubSeg">
+                <button type="button" data-src="editor" class="on">Editor ထဲက စာတန်း</button>
+                <button type="button" data-src="file">SRT ဖိုင်</button>
+              </div>
+              <div class="fontfile-row">
+                <button class="btn small" id="shortSrtBtn" type="button" hidden>SRT ဖိုင် တင်မည်</button>
+                <span class="fontfile-name" id="shortSubInfo"></span>
+              </div>
+
+              <div class="short-preview-wrap">
+                <canvas id="shortCanvas" width="360" height="640"></canvas>
+              </div>
+              <div class="short-transport">
+                <button class="icon-btn" id="shortPlayBtn" type="button" aria-label="Short preview Play / Pause">
+                  <svg id="shortPlayIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                  <svg id="shortPauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+                </button>
+                <span class="time" id="shortTimeLabel">0:00 / 0:00</span>
+                <input type="range" id="shortSeek" min="0" max="0" step="0.05" value="0" aria-label="Short seek" />
+              </div>
+              <audio id="shortPlayer" preload="metadata" hidden></audio>
+
+              <div class="row" style="align-items:center;margin-top:12px">
+                <button class="btn primary" id="shortExportBtn" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
+                  Short ဗီဒီယို Export လုပ်မည်
+                </button>
+                <button class="btn danger" id="shortCancelBtn" type="button" hidden>ရပ်မည်</button>
+              </div>
+              <div class="progress" id="shortProgress"><i></i></div>
+              <p class="status" id="shortStatus" hidden></p>
+              <p class="export-note">Render က အသံ အရှည်အတိုင်း အချိန်ယူပြီး တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်လို့ ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖြစ်ပါတယ် — ဒီ browser က MP4 မထုတ်နိုင်ရင်သာ WebM နဲ့ ထုတ်ပေးမည်ဖြစ်ပြီး စတင်ခင် ကြိုပြောပြပါမည်။</p>
+            </section>
+          </div>
+
+          <div class="col-side">
+            <section class="card" aria-labelledby="aiH">
+              <h2 id="aiH">AI အလိုအလျောက် စာသားထုတ်</h2>
+              <p class="sub">ဖိုင်ထဲက အသံကို Google Gemini ဆီ ပို့ပြီး စာတန်း အပိုင်းလိုက် ထုတ်ပေးမည်။</p>
+              <label class="flabel" for="apiKeyInput">Gemini API Key</label>
+              <input class="text-input" type="password" id="apiKeyInput" placeholder="AIza…" autocomplete="off" spellcheck="false" />
+              <label class="flabel">Model</label>
+              <p class="sub" style="margin:0">Auto — သင့် API key သုံးလို့ရတဲ့ Gemini Flash model ကို အလိုအလျောက် ရွေးပေးပါမည် (အသစ်ဆုံး model အရင် စမ်းပါမည်)။</p>
+              <p class="sub" id="usedModelLine" style="margin:6px 0 0" hidden></p>
+              <div style="margin-top:14px">
+                <button class="btn primary" id="transcribeBtn" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.7 4.6L18 9.2l-4.3 1.6L12 15.4l-1.7-4.6L6 9.2l4.3-1.6z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
+                  စာသား ထုတ်မည်
+                </button>
+              </div>
+              <div class="progress" id="aiProgress"><i></i></div>
+              <p class="status" id="aiStatus">Key က ဒီ tab ထဲမှာပဲ သုံးပြီး မ save ထားပါ — page ပိတ်ရင် ပြန်ရိုက်ရမည်။</p>
+            </section>
+
+            <section class="card" aria-labelledby="cuesH">
+              <div class="card-head">
+                <h2 id="cuesH">စာတန်းများ <span id="cueCount" style="color:var(--muted);font-weight:400"></span></h2>
+              </div>
+              <div class="cue-tools">
+                <button class="btn small" id="addCueBtn" type="button">+ ယခု နေရာမှာ Cue ထည့်</button>
+                <button class="btn small" id="importSrtBtn" type="button">SRT တင်မည်</button>
+                <button class="btn small" id="exportSrtBtn" type="button">SRT ထုတ်မည်</button>
+              </div>
+              <div class="cue-list" id="cueList">
+                <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <input type="file" id="videoInput" accept="video/*,.mkv" hidden />
+      <input type="file" id="audioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
+      <input type="file" id="srtInput" accept=".srt,text/plain" hidden />
+      <input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden />
+      <input type="file" id="shortImageInput" accept="image/*" hidden />
+      <input type="file" id="shortAudioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
+      <input type="file" id="shortSrtInput" accept=".srt,text/plain" hidden />
+      <div id="toast" role="status"></div>
+    </main>
+
+    <script>
+    (function(){
+      "use strict";
+      var $ = function(id){ return document.getElementById(id); };
+
+      /* ================= state ================= */
+      var CUSTOM_FAMILY = "SSUploadedFont";
+      var state = {
+        videoFile: null,
+        cues: [],           // {id, start, end, text}
+        style: { font: "'Padauk','Noto Sans Myanmar',sans-serif", size: 5.5, color: "#ffffff", bg: true, pos: "bottom", posX: 50, posY: 92 },
+        customFont: null,   // {face, name}
+        modelList: null, activeModelIdx: 0, usedModel: null,
+        activeCueId: null,
+        transcribing: false,
+        exporting: false,
+        mode: "video",        // "video" | "audio"
+        pendingShort: false,  // landing Short CTA: scroll to the maker after audio loads
+        audioPeaks: null,
+        shortImg: null, shortImgName: "",
+        shortAudioFile: null, shortAudioURL: null, shortAudioDur: 0,
+        shortSubSource: "editor",  // "editor" | "file"
+        shortSrtCues: null,
+        shortExporting: false
+      };
+      var cueSeq = 1;
+
+      var video = $("video"), overlay = $("overlay"), overlayText = $("overlayText"),
+          stage = $("stage"), seekBar = $("seekBar"), timeLabel = $("timeLabel");
+
+      /* ================= helpers ================= */
+      function pad(n, l){ n = String(n); while(n.length < (l||2)) n = "0" + n; return n; }
+      function fmtClock(s){
+        if(!isFinite(s) || s < 0) s = 0;
+        var m = Math.floor(s/60), sec = Math.floor(s%60);
+        if(m >= 60){ var h = Math.floor(m/60); return h + ":" + pad(m%60) + ":" + pad(sec); }
+        return m + ":" + pad(sec);
+      }
+      function fmtSRT(s){
+        if(!isFinite(s) || s < 0) s = 0;
+        var h = Math.floor(s/3600), m = Math.floor(s%3600/60), sec = Math.floor(s%60), ms = Math.round((s - Math.floor(s))*1000);
+        if(ms === 1000){ ms = 0; sec++; }
+        return pad(h) + ":" + pad(m) + ":" + pad(sec) + "," + pad(ms, 3);
+      }
+      function parseTimeStr(v){
+        v = String(v == null ? "" : v).trim().replace(",", ".");
+        if(!v) return NaN;
+        if(v.indexOf(":") >= 0){
+          var p = v.split(":").map(Number);
+          if(p.some(isNaN)) return NaN;
+          return p.reduce(function(a, x){ return a*60 + x; }, 0);
+        }
+        var n = Number(v); return isNaN(n) ? NaN : n;
+      }
+      var toastTimer = null;
+      function toast(msg){
+        var t = $("toast"); t.textContent = msg; t.classList.add("on");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function(){ t.classList.remove("on"); }, 3200);
+      }
+      function download(blob, name){
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+      }
+      function baseName(file){ return (file ? file.name : "video").replace(/\.[^.]+$/, "") || "video"; }
+      function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+      /* ================= video loading ================= */
+      var dropzone = $("dropzone"), videoInput = $("videoInput");
+      dropzone.addEventListener("click", function(){ videoInput.click(); });
+      dropzone.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); videoInput.click(); } });
+      ["dragenter","dragover"].forEach(function(ev){ dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.add("drag"); }); });
+      ["dragleave","drop"].forEach(function(ev){ dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.remove("drag"); }); });
+      dropzone.addEventListener("drop", function(e){
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if(f) loadMedia(f);
+      });
+      $("pickVideoBtn").addEventListener("click", function(e){ e.stopPropagation(); videoInput.click(); });
+      $("pickAudioBtn").addEventListener("click", function(e){ e.stopPropagation(); $("audioInput").click(); });
+      $("shortCtaBtn").addEventListener("click", function(){ state.pendingShort = true; $("audioInput").click(); });
+      videoInput.addEventListener("change", function(){ if(videoInput.files[0]) loadMedia(videoInput.files[0]); videoInput.value = ""; });
+      $("audioInput").addEventListener("change", function(){ if(this.files[0]) loadMedia(this.files[0]); this.value = ""; });
+      $("newVideoBtn").addEventListener("click", function(){ (state.mode === "audio" ? $("audioInput") : videoInput).click(); });
+
+      /* One entry point for both kinds of media. An audio file plays
+         through the same media element (it simply has no picture), so the
+         transport, cue editor, transcription and SRT tools all work
+         unchanged; only the stage visual and the video-export card differ. */
+      function loadMedia(file){
+        if(state.exporting){ toast("Render လုပ်နေတုန်း ဖိုင် မပြောင်းပါနဲ့"); return; }
+        var isAudio = /^audio\//.test(file.type || "") || /\.(mp3|wav|m4a|aac|ogg|oga|flac|opus|weba)$/i.test(file.name);
+        if(state.videoFile && video.src) URL.revokeObjectURL(video.src);
+        state.videoFile = file;
+        state.mode = isAudio ? "audio" : "video";
+        video.src = URL.createObjectURL(file);
+        $("fileName").textContent = file.name;
+        $("dropSection").hidden = true;
+        $("studio").hidden = false;
+        stage.classList.toggle("audio-mode", isAudio);
+        $("audioStage").hidden = !isAudio;
+        $("videoExportCard").hidden = isAudio;
+        $("shortUseCurrentBtn").hidden = !isAudio;
+        if(isAudio){
+          $("audioStageName").textContent = file.name;
+          state.audioPeaks = null;
+          decodeAudio(file).then(function(buf){
+            if(state.videoFile !== file) return;
+            state.audioPeaks = computePeaks(buf, 240);
+            drawWaveform();
+          }).catch(function(){ state.audioPeaks = null; drawWaveform(); });
+          /* The Short maker needs an audio file anyway — preselect this one. */
+          setShortAudio(file);
+          if(state.pendingShort){
+            state.pendingShort = false;
+            setTimeout(function(){
+              var sc = $("shortCard");
+              if(sc) sc.scrollIntoView({ behavior: "smooth", block: "start" });
+              toast("Short အတွက် အသံ ရပါပြီ — ပုံ တင်ပြီး Export လုပ်နိုင်ပါပြီ");
+            }, 400);
+          }
+        }
+        video.load();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if(isAudio) setTimeout(drawWaveform, 80);
+      }
+      function computePeaks(buf, n){
+        var ch = buf.getChannelData(0), len = ch.length, size = Math.max(1, Math.floor(len / n)), peaks = [];
+        for(var i = 0; i < n; i++){
+          var max = 0, start = i * size;
+          for(var j = 0; j < size; j += 8){ var v = Math.abs(ch[start + j] || 0); if(v > max) max = v; }
+          peaks.push(max);
+        }
+        return peaks;
+      }
+      function drawWaveform(){
+        var c = $("waveCanvas");
+        if(!c || state.mode !== "audio" || $("audioStage").hidden) return;
+        var w = c.clientWidth, h = c.clientHeight;
+        if(!w || !h) return;
+        var dpr = window.devicePixelRatio || 1;
+        var W = Math.round(w * dpr), H = Math.round(h * dpr);
+        if(c.width !== W || c.height !== H){ c.width = W; c.height = H; }
+        var g = c.getContext("2d");
+        g.clearRect(0, 0, W, H);
+        g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c77400";
+        var mid = H / 2, peaks = state.audioPeaks;
+        if(!peaks || !peaks.length){
+          g.globalAlpha = 0.45;
+          g.fillRect(0, mid - 1, W, 2);
+          g.globalAlpha = 1;
+          return;
+        }
+        var n = peaks.length, bw = W / n;
+        for(var i = 0; i < n; i++){
+          var bh = Math.max(2 * dpr, peaks[i] * H * 0.92);
+          g.fillRect(i * bw + bw * 0.22, mid - bh / 2, Math.max(1, bw * 0.56), bh);
+        }
+      }
+
+      video.addEventListener("loadedmetadata", function(){
+        seekBar.max = video.duration || 0;
+        timeLabel.textContent = fmtClock(0) + " / " + fmtClock(video.duration);
+        updateOverlay();
+      });
+      video.addEventListener("error", function(){
+        if(state.videoFile) toast("ဒီ ဖိုင်ကို browser က မဖွင့်နိုင်ပါ — MP4 (H.264) ဗီဒီယို သို့မဟုတ် MP3/WAV အသံဖိုင် စမ်းကြည့်ပါ");
+      });
+
+      /* ================= transport ================= */
+      var playBtn = $("playBtn"), playIcon = $("playIcon"), pauseIcon = $("pauseIcon");
+      function syncPlayIcon(){
+        var playing = !video.paused && !video.ended;
+        playIcon.style.display = playing ? "none" : "";
+        pauseIcon.style.display = playing ? "" : "none";
+      }
+      playBtn.addEventListener("click", function(){ video.paused ? video.play() : video.pause(); });
+      video.addEventListener("play", syncPlayIcon);
+      video.addEventListener("pause", syncPlayIcon);
+      video.addEventListener("ended", syncPlayIcon);
+      seekBar.addEventListener("input", function(){ video.currentTime = Number(seekBar.value); });
+      document.addEventListener("keydown", function(e){
+        if($("studio").hidden) return;
+        var t = e.target;
+        if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+        if(e.code === "Space"){ e.preventDefault(); video.paused ? video.play() : video.pause(); }
+      });
+      /* playback loop: seek bar, time label, active cue + overlay */
+      (function loop(){
+        requestAnimationFrame(loop);
+        if($("studio").hidden || !state.videoFile) return;
+        if(document.activeElement !== seekBar) seekBar.value = video.currentTime || 0;
+        timeLabel.textContent = fmtClock(video.currentTime) + " / " + fmtClock(video.duration);
+        if(state.mode === "audio" && isFinite(video.duration) && video.duration > 0){
+          var ph = $("wavePlayhead");
+          if(ph) ph.style.left = (video.currentTime / video.duration * 100) + "%";
+        }
+        updateActiveCue();
+      })();
+
+      /* ================= cues ================= */
+      var cueList = $("cueList");
+      function sortCues(){ state.cues.sort(function(a, b){ return a.start - b.start || a.end - b.end; }); }
+      function cueAtIn(list, t){
+        for(var i = 0; i < list.length; i++){
+          var c = list[i];
+          if(t >= c.start && t < c.end) return c;
+          if(c.start > t) break;
+        }
+        return null;
+      }
+      function cueAt(t){ return cueAtIn(state.cues, t); }
+      function newCue(start, end, text){
+        return { id: cueSeq++, start: Math.max(0, start || 0), end: Math.max((start || 0) + 0.5, end || (start || 0) + 2), text: text || "" };
+      }
+      function renderCues(){
+        sortCues();
+        cueList.innerHTML = "";
+        $("cueCount").textContent = state.cues.length ? "(" + state.cues.length + ")" : "";
+        if(!state.cues.length){
+          var empty = document.createElement("div");
+          empty.className = "cue-empty";
+          empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
+          cueList.appendChild(empty);
+          return;
+        }
+        state.cues.forEach(function(c, i){
+          var row = document.createElement("div");
+          row.className = "cue" + (c.id === state.activeCueId ? " active" : "");
+          row.dataset.id = c.id;
+          row.innerHTML =
+            '<div class="cue-top">' +
+              '<span class="cue-idx">' + (i + 1) + '</span>' +
+              '<input class="cue-time" data-field="start" value="' + c.start.toFixed(1) + '" inputmode="decimal" aria-label="စချိန် (စက္ကန့်)" />' +
+              '<span class="cue-arrow">→</span>' +
+              '<input class="cue-time" data-field="end" value="' + c.end.toFixed(1) + '" inputmode="decimal" aria-label="ဆုံးချိန် (စက္ကန့်)" />' +
+              '<button class="mini-btn cue-seek" type="button" title="ဒီနေရာက ဖွင့်မည်" aria-label="Seek"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>' +
+              '<button class="mini-btn cue-del" type="button" title="ဖျက်မည်" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2m-8 0l1 13h8l1-13"/></svg></button>' +
+            '</div>' +
+            '<textarea class="cue-text" rows="2" placeholder="စာတန်း စာသား…" aria-label="စာတန်း စာသား">' + esc(c.text) + '</textarea>';
+          cueList.appendChild(row);
+        });
+        updateShortSubInfo();
+        if(state.shortImg) drawShortPreview();
+      }
+      function updateActiveCue(){
+        var c = cueAt(video.currentTime);
+        var id = c ? c.id : null;
+        if(id !== state.activeCueId){
+          state.activeCueId = id;
+          var rows = cueList.querySelectorAll(".cue");
+          rows.forEach(function(r){ r.classList.toggle("active", Number(r.dataset.id) === id); });
+          if(id != null){
+            var active = cueList.querySelector(".cue.active");
+            if(active && !video.paused) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }
+        }
+        var text = c ? c.text : "";
+        /* With no cue on screen, show a faint sample box so the subtitle
+           position can still be grabbed and dragged at any time. The sample
+           is preview-only — export draws real cues only. */
+        var ghost = !text && !!state.videoFile && !state.exporting;
+        var shown = ghost ? "စာတန်း နမူနာ — ဆွဲရွှေ့နိုင်ပါတယ်" : text;
+        if(overlayText.textContent !== shown) overlayText.textContent = shown;
+        if(overlayText.classList.contains("ghost") !== ghost) overlayText.classList.toggle("ghost", ghost);
+        overlay.style.display = (text || ghost) ? "" : "none";
+      }
+      function updateOverlay(){ updateActiveCue(); }
+
+      cueList.addEventListener("input", function(e){
+        var row = e.target.closest(".cue"); if(!row) return;
+        var c = state.cues.find(function(x){ return x.id === Number(row.dataset.id); }); if(!c) return;
+        if(e.target.classList.contains("cue-text")){
+          c.text = e.target.value;
+          if(c.id === state.activeCueId) updateOverlay();
+        }
+      });
+      cueList.addEventListener("change", function(e){
+        if(!e.target.classList.contains("cue-time")) return;
+        var row = e.target.closest(".cue");
+        var c = state.cues.find(function(x){ return x.id === Number(row.dataset.id); }); if(!c) return;
+        var v = parseTimeStr(e.target.value);
+        if(isNaN(v)){ e.target.value = c[e.target.dataset.field].toFixed(1); return; }
+        c[e.target.dataset.field] = Math.max(0, v);
+        if(c.end <= c.start) c.end = c.start + 0.5;
+        renderCues(); updateOverlay();
+      });
+      cueList.addEventListener("click", function(e){
+        var row = e.target.closest(".cue"); if(!row) return;
+        var c = state.cues.find(function(x){ return x.id === Number(row.dataset.id); }); if(!c) return;
+        if(e.target.closest(".cue-seek")){ video.currentTime = c.start; video.play(); }
+        if(e.target.closest(".cue-del")){
+          state.cues = state.cues.filter(function(x){ return x.id !== c.id; });
+          renderCues(); updateOverlay();
+        }
+      });
+
+      $("addCueBtn").addEventListener("click", function(){
+        var t = video.currentTime || 0;
+        var dur = isFinite(video.duration) ? video.duration : t + 2;
+        var c = newCue(t, Math.min(t + 2, Math.max(dur, t + 0.5)));
+        state.cues.push(c); renderCues(); updateOverlay();
+        var row = cueList.querySelector('.cue[data-id="' + c.id + '"]');
+        if(row){ row.scrollIntoView({ block: "nearest", behavior: "smooth" }); var ta = row.querySelector(".cue-text"); if(ta) ta.focus(); }
+      });
+
+      /* ================= SRT import / export ================= */
+      function buildSRT(){
+        sortCues();
+        return state.cues.map(function(c, i){
+          return (i + 1) + "\n" + fmtSRT(c.start) + " --> " + fmtSRT(c.end) + "\n" + (c.text || "").trim() + "\n";
+        }).join("\n");
+      }
+      $("exportSrtBtn").addEventListener("click", function(){
+        if(!state.cues.length){ toast("ထုတ်စရာ စာတန်း မရှိသေးပါ"); return; }
+        download(new Blob([buildSRT()], { type: "text/plain;charset=utf-8" }), baseName(state.videoFile) + ".srt");
+        toast("SRT ဖိုင် ထုတ်ပြီးပါပြီ");
+      });
+      /* Shared SRT parser — used by the editor import and by the Short
+         maker's own subtitle-file source. */
+      function parseSRTText(txt){
+        var blocks = String(txt).replace(/\r\n/g, "\n").split(/\n\s*\n/), parsed = [];
+        blocks.forEach(function(b){
+          var lines = b.split("\n").filter(function(l){ return l.trim() !== ""; });
+          var ti = lines.findIndex(function(l){ return l.indexOf("-->") >= 0; });
+          if(ti < 0) return;
+          var parts = lines[ti].split("-->");
+          var s = parseTimeStr(parts[0]), e2 = parseTimeStr(parts[1]);
+          if(isNaN(s) || isNaN(e2)) return;
+          parsed.push(newCue(s, e2, lines.slice(ti + 1).join("\n")));
+        });
+        return parsed;
+      }
+      $("importSrtBtn").addEventListener("click", function(){ $("srtInput").click(); });
+      $("srtInput").addEventListener("change", function(){
+        var f = $("srtInput").files[0]; $("srtInput").value = "";
+        if(!f) return;
+        f.text().then(function(txt){
+          var parsed = parseSRTText(txt);
+          if(!parsed.length){ toast("SRT ဖိုင်ထဲက စာတန်း မဖတ်နိုင်ပါ"); return; }
+          state.cues = parsed; renderCues(); updateOverlay();
+          toast("စာတန်း " + parsed.length + " ပိုင်း တင်ပြီးပါပြီ");
+        }).catch(function(){ toast("ဖိုင် မဖတ်နိုင်ပါ"); });
+      });
+
+      /* ================= style controls ================= */
+      var sizeRange = $("sizeRange"), colorInput = $("colorInput");
+      function applyStyle(){
+        var st = state.style;
+        overlayText.style.fontFamily = st.font;
+        overlayText.style.color = st.color;
+        overlayText.classList.toggle("pill", st.bg);
+        overlay.style.left = st.posX + "%";
+        overlay.style.top = st.posY + "%";
+        updatePosLabel();
+        var h = stage.clientHeight || video.clientHeight || 300;
+        overlayText.style.fontSize = Math.max(11, h * st.size / 100) + "px";
+        if(state.shortImg) drawShortPreview();
+      }
+      window.addEventListener("resize", function(){ applyStyle(); drawWaveform(); });
+      video.addEventListener("loadedmetadata", applyStyle);
+      $("fontSelect").addEventListener("change", function(){ state.style.font = this.value; applyStyle(); });
+      sizeRange.addEventListener("input", function(){
+        state.style.size = Number(sizeRange.value);
+        $("sizeVal").textContent = state.style.size;
+        applyStyle();
+      });
+      colorInput.addEventListener("input", function(){ state.style.color = colorInput.value; applyStyle(); });
+      document.querySelectorAll(".swatch").forEach(function(b){
+        b.addEventListener("click", function(){
+          state.style.color = b.dataset.color; colorInput.value = b.dataset.color; applyStyle();
+        });
+      });
+      function segWire(id, attr, fn){
+        $(id).addEventListener("click", function(e){
+          var b = e.target.closest("button"); if(!b) return;
+          this.querySelectorAll("button").forEach(function(x){ x.classList.remove("on"); });
+          b.classList.add("on"); fn(b.dataset[attr]);
+        });
+      }
+      segWire("posSeg", "pos", function(v){ setPosition(v); });
+      segWire("bgSeg", "bg", function(v){ state.style.bg = (v === "on"); applyStyle(); });
+
+      /* ---------- subtitle position: presets, reset, drag ----------
+         posX / posY are the % position of the subtitle block's center
+         inside the frame. The preview overlay and the export renderer
+         both anchor on them, so a dragged position exports identically. */
+      var POS_PRESETS = { top: { x: 50, y: 9 }, middle: { x: 50, y: 50 }, bottom: { x: 50, y: 92 } };
+      function markPosSeg(name){
+        document.querySelectorAll("#posSeg button").forEach(function(b){
+          b.classList.toggle("on", b.dataset.pos === name);
+        });
+      }
+      function setPosition(name){
+        var p = POS_PRESETS[name]; if(!p) return;
+        state.style.pos = name;
+        state.style.posX = p.x;
+        state.style.posY = p.y;
+        markPosSeg(name);
+        applyStyle();
+      }
+      function updatePosLabel(){
+        var el = $("posVal");
+        if(el) el.textContent = "လက်ရှိ နေရာ — X " + Math.round(state.style.posX) + "% · Y " + Math.round(state.style.posY) + "%";
+      }
+      $("posResetBtn").addEventListener("click", function(){ setPosition("bottom"); });
+
+      var dragId = null;
+      function dragTo(e){
+        var r = stage.getBoundingClientRect();
+        if(!r.width || !r.height) return;
+        var x = (e.clientX - r.left) / r.width * 100;
+        var y = (e.clientY - r.top) / r.height * 100;
+        state.style.posX = Math.round(Math.max(4, Math.min(96, x)) * 10) / 10;
+        state.style.posY = Math.round(Math.max(3, Math.min(97, y)) * 10) / 10;
+        state.style.pos = "custom";
+        markPosSeg(null);
+        applyStyle();
+      }
+      overlayText.addEventListener("pointerdown", function(e){
+        if(state.exporting || !state.videoFile) return;
+        e.preventDefault();
+        dragId = e.pointerId;
+        try { overlayText.setPointerCapture(e.pointerId); } catch(err){}
+        dragTo(e);
+      });
+      overlayText.addEventListener("pointermove", function(e){
+        if(dragId !== null && e.pointerId === dragId) dragTo(e);
+      });
+      ["pointerup", "pointercancel"].forEach(function(ev){
+        overlayText.addEventListener(ev, function(e){
+          if(e.pointerId === dragId) dragId = null;
+        });
+      });
+      applyStyle();
+
+      /* ================= custom font upload ================= */
+      var fontInput = $("fontInput"), fontSelect = $("fontSelect");
+      $("uploadFontBtn").addEventListener("click", function(){ fontInput.click(); });
+      fontInput.addEventListener("change", function(){
+        var f = fontInput.files[0]; fontInput.value = "";
+        if(f) loadCustomFont(f);
+      });
+      function loadCustomFont(file){
+        if(!/\.(ttf|otf|woff2?)$/i.test(file.name)){
+          toast("ဖောင့်ဖိုင် မဟုတ်ပါ — TTF / OTF / WOFF / WOFF2 ပဲ ရပါတယ်"); return;
+        }
+        var displayName = file.name.replace(/\.[^.]+$/, "");
+        file.arrayBuffer().then(function(buf){
+          var face = new FontFace(CUSTOM_FAMILY, buf);
+          return face.load().then(function(loaded){ return { loaded: loaded, name: displayName }; });
+        }).then(function(res){
+          if(state.customFont) document.fonts.delete(state.customFont.face);
+          document.fonts.add(res.loaded);
+          state.customFont = { face: res.loaded, name: res.name };
+          var opt = fontSelect.querySelector('option[value="__uploaded__"]');
+          if(!opt){
+            opt = document.createElement("option");
+            opt.value = "__uploaded__";
+            fontSelect.appendChild(opt);
+          }
+          opt.textContent = "ကိုယ့်ဖောင့် — " + res.name;
+          fontSelect.value = "__uploaded__";
+          state.style.font = "'" + CUSTOM_FAMILY + "','Padauk',sans-serif";
+          $("fontFileName").innerHTML = "တင်ထားသော ဖောင့်: <b>" + esc(res.name) + "</b>";
+          $("removeFontBtn").hidden = false;
+          applyStyle();
+          toast("ဖောင့် “" + res.name + "” တင်ပြီးပါပြီ");
+        }).catch(function(){
+          toast("ဒီ ဖောင့်ဖိုင်ကို မဖတ်နိုင်ပါ — ဖိုင် ပျက်နေတာ ဖြစ်နိုင်ပါတယ်");
+        });
+      }
+      $("removeFontBtn").addEventListener("click", function(){
+        if(state.customFont){ document.fonts.delete(state.customFont.face); state.customFont = null; }
+        var opt = fontSelect.querySelector('option[value="__uploaded__"]');
+        if(opt) opt.remove();
+        if(fontSelect.value === "__uploaded__" || !fontSelect.value){
+          fontSelect.selectedIndex = 0;
+          state.style.font = fontSelect.value;
+        }
+        $("fontFileName").textContent = "TTF · OTF · WOFF · WOFF2";
+        $("removeFontBtn").hidden = true;
+        applyStyle();
+        toast("ကိုယ့်ဖောင့် ဖယ်ရှားပြီးပါပြီ");
+      });
+
+      renderCues();
+
+      /* ================= AI transcription (Gemini) ================= */
+      var aiStatus = $("aiStatus"), aiProgress = $("aiProgress"), transcribeBtn = $("transcribeBtn");
+      function setAIStatus(msg, cls){
+        aiStatus.textContent = msg;
+        aiStatus.className = "status" + (cls ? " " + cls : "");
+      }
+      function setAIProgress(pct){
+        if(pct == null){ aiProgress.classList.remove("on"); aiProgress.querySelector("i").style.width = "0"; }
+        else { aiProgress.classList.add("on"); aiProgress.querySelector("i").style.width = Math.round(pct * 100) + "%"; }
+      }
+
+      function decodeAudio(file){
+        return file.arrayBuffer().then(function(ab){
+          var AC = window.AudioContext || window.webkitAudioContext;
+          var ctx = new AC();
+          return ctx.decodeAudioData(ab).then(function(buf){
+            ctx.close();
+            return buf;
+          }, function(err){ ctx.close(); throw err; });
+        });
+      }
+      function renderMono16k(audioBuf, fromSec, toSec){
+        var sr = 16000;
+        var len = Math.max(1, Math.ceil((toSec - fromSec) * sr));
+        var off = new OfflineAudioContext(1, len, sr);
+        var src = off.createBufferSource();
+        src.buffer = audioBuf;
+        var gain = off.createGain();
+        src.connect(gain); gain.connect(off.destination);
+        src.start(0, fromSec, toSec - fromSec);
+        return off.startRendering().then(function(r){ return r.getChannelData(0); });
+      }
+      function encodeWAV(samples, sr){
+        var buf = new ArrayBuffer(44 + samples.length * 2), v = new DataView(buf);
+        function wstr(off, s){ for(var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+        wstr(0, "RIFF"); v.setUint32(4, 36 + samples.length * 2, true); wstr(8, "WAVE"); wstr(12, "fmt ");
+        v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+        wstr(36, "data"); v.setUint32(40, samples.length * 2, true);
+        for(var i = 0; i < samples.length; i++){
+          var s = Math.max(-1, Math.min(1, samples[i]));
+          v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+        return buf;
+      }
+      function bufToB64(buf){
+        var bytes = new Uint8Array(buf), bin = "", CH = 0x8000;
+        for(var i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+        return btoa(bin);
+      }
+      /* fetch with a hard timeout. Any rejection out of here is a transport-level
+         failure (DNS / blocked host / dropped uplink / timeout) — tagged
+         err.network so callers can tell it apart from a real Google API error. */
+      function fetchWithTimeout(url, opts, ms){
+        var ctrl = new AbortController();
+        var timer = setTimeout(function(){ ctrl.abort(); }, ms);
+        opts = opts || {};
+        opts.signal = ctrl.signal;
+        return fetch(url, opts).then(function(r){
+          clearTimeout(timer);
+          return r;
+        }).catch(function(err){
+          clearTimeout(timer);
+          var e = new Error(err && err.name === "AbortError" ? "Request timed out" : (err && err.message) || "Failed to fetch");
+          e.network = true;
+          throw e;
+        });
+      }
+      function delay(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+
+      /* ---- Gemini model auto-discovery: whatever Flash models this key can use ---- */
+      var FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+      var modelCache = { key: null, models: null, at: 0 };
+      function modelVersion(id){
+        var m = String(id).match(/gemini-(\d+)(?:\.(\d+))?/i);
+        return m ? [Number(m[1]), Number(m[2] || 0)] : [0, 0];
+      }
+      function discoverModels(key){
+        var now = Date.now();
+        if(modelCache.key === key && modelCache.models && now - modelCache.at < 5 * 60 * 1000){
+          return Promise.resolve(modelCache.models);
+        }
+        return fetchWithTimeout("https://generativelanguage.googleapis.com/v1beta/models", {
+          headers: { "x-goog-api-key": key }
+        }, 20000).then(function(r){
+          if(!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        }).then(function(j){
+          var list = (j.models || []).filter(function(mm){
+            var id = String(mm.name || "").replace(/^models\//, "");
+            var low = id.toLowerCase();
+            if(low.indexOf("flash") < 0) return false;
+            if(/tts|image|embedding|aqa|robotics|computer-use|learnlm/.test(low)) return false;
+            var methods = mm.supportedGenerationMethods || [];
+            return methods.indexOf("generateContent") >= 0;
+          }).map(function(mm){ return String(mm.name).replace(/^models\//, ""); });
+          list = list.filter(function(x, i){ return list.indexOf(x) === i; });
+          list.sort(function(a, b){
+            var va = modelVersion(a), vb = modelVersion(b);
+            if(vb[0] !== va[0]) return vb[0] - va[0];
+            if(vb[1] !== va[1]) return vb[1] - va[1];
+            var la = /lite/.test(a) ? 1 : 0, lb = /lite/.test(b) ? 1 : 0;
+            if(la !== lb) return la - lb;
+            return a < b ? 1 : -1;
+          });
+          if(!list.length) list = FALLBACK_MODELS.slice();
+          modelCache = { key: key, models: list, at: Date.now() };
+          return list;
+        }).catch(function(err){
+          /* An HTTP-level refusal (bad key, no list permission) still gets the
+             fallback list. A transport failure means Google is unreachable at
+             all — surface it instead of pretending the models were tried. */
+          if(err && err.network) throw err;
+          return FALLBACK_MODELS.slice();
+        });
+      }
+
+      function geminiRequestOnce(key, model, wavB64){
+        var prompt = "Transcribe the speech in this audio exactly as spoken, in the language being spoken (if Burmese, write Burmese script). " +
+          "Return ONLY a JSON array of subtitle segments like [{\"start\":0.0,\"end\":2.5,\"text\":\"...\"}]. " +
+          "Times are seconds from the start of this audio clip. Each segment should be one short sentence or phrase, at most about 6 seconds long. " +
+          "If there is no speech, return []. No markdown, no commentary.";
+        return fetchWithTimeout("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+          body: JSON.stringify({
+            contents: [{ parts: [
+              { text: prompt },
+              { inline_data: { mime_type: "audio/wav", data: wavB64 } }
+            ]}],
+            generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+          })
+        }, 120000).then(function(r){
+          return r.json().then(function(j){
+            if(!r.ok){
+              var m = (j && j.error && j.error.message) || ("HTTP " + r.status);
+              var er = new Error(m);
+              er.status = r.status;
+              er.retryable = (r.status === 404 || r.status === 429 || r.status >= 500);
+              throw er;
+            }
+            var parts = j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts || [];
+            var text = parts.map(function(p){ return p.text || ""; }).join("");
+            var a = text.indexOf("["), b = text.lastIndexOf("]");
+            if(a < 0 || b < a) return [];
+            try { return JSON.parse(text.slice(a, b + 1)); } catch(e){ return []; }
+          });
+        });
+      }
+      /* Try models in order (starting from the one that last worked).
+         A transport failure is retried on the SAME model first (backoff) —
+         switching models cannot fix a dropped connection — then falls
+         through to the next model. API errors (404 / 429 / 5xx) fall through
+         immediately; a hard API error (400 / 403) stops at once. */
+      function geminiTranscribeChunk(key, models, wavB64, onNetRetry){
+        var start = state.activeModelIdx || 0;
+        function attemptModel(n){
+          var idx = (start + n) % models.length;
+          var netTries = 0;
+          function once(){
+            return geminiRequestOnce(key, models[idx], wavB64).then(function(segs){
+              state.activeModelIdx = idx;
+              state.usedModel = models[idx];
+              return segs;
+            }).catch(function(err){
+              if(err && err.network && n === 0 && netTries < 2){
+                netTries++;
+                if(onNetRetry) onNetRetry(netTries);
+                return delay(1500 * netTries).then(once);
+              }
+              var retryable = !err || err.network || err.retryable;
+              if(retryable && n + 1 < models.length) return attemptModel(n + 1);
+              throw err;
+            });
+          }
+          return once();
+        }
+        return attemptModel(0);
+      }
+
+      transcribeBtn.addEventListener("click", function(){
+        if(state.transcribing) return;
+        if(!state.videoFile){ toast("အရင် ဖိုင် တင်ပါ"); return; }
+        var key = $("apiKeyInput").value.trim();
+        if(!key){ setAIStatus("Gemini API Key အရင် ရိုက်ထည့်ပါ။", "err"); $("apiKeyInput").focus(); return; }
+        state.transcribing = true;
+        transcribeBtn.disabled = true;
+        setAIProgress(0.02);
+        setAIStatus("သင့် key သုံးလို့ရတဲ့ model တွေ ရှာနေပါတယ်…");
+
+        discoverModels(key).then(function(models){
+          state.modelList = models;
+          state.activeModelIdx = 0;
+          setAIStatus("အသံ ထုတ်ယူနေပါတယ်… (ဖိုင် ကြီးရင် ခဏ စောင့်ပါ)");
+          return decodeAudio(state.videoFile);
+        }).then(function(audioBuf){
+          var dur = audioBuf.duration, CHUNK = 60;
+          var chunks = [];
+          for(var t = 0; t < dur; t += CHUNK) chunks.push([t, Math.min(dur, t + CHUNK)]);
+          var collected = [];
+          var chain = Promise.resolve();
+          chunks.forEach(function(ch, idx){
+            chain = chain.then(function(){
+              setAIStatus("စာသား ထုတ်နေပါတယ်… အပိုင်း " + (idx + 1) + " / " + chunks.length);
+              setAIProgress((idx + 0.15) / chunks.length * 0.9 + 0.05);
+              return renderMono16k(audioBuf, ch[0], ch[1]).then(function(samples){
+                var wav = encodeWAV(samples, 16000);
+                return geminiTranscribeChunk(key, state.modelList, bufToB64(wav), function(){
+                  setAIStatus("ချိတ်ဆက်မှု ပြတ်သွားလို့ ပြန်စမ်းနေပါတယ်… အပိုင်း " + (idx + 1) + " / " + chunks.length);
+                });
+              }).then(function(segs){
+                (segs || []).forEach(function(sg){
+                  var s = Number(sg.start), e = Number(sg.end), tx = String(sg.text || "").trim();
+                  if(isNaN(s) || !tx) return;
+                  if(isNaN(e) || e <= s) e = s + 2;
+                  s += ch[0]; e += ch[0];
+                  if(e > dur) e = dur;
+                  collected.push(newCue(s, e, tx));
+                });
+                state.cues = collected.slice();
+                renderCues(); updateOverlay();
+              });
+            });
+          });
+          return chain.then(function(){
+            setAIProgress(1);
+            if(!collected.length){
+              setAIStatus("စာသား မတွေ့ပါ — ဖိုင်မှာ စကားပြောသံ မပါတာလား စစ်ကြည့်ပါ။", "err");
+            } else {
+              setAIStatus("ပြီးပါပြီ — စာတန်း " + collected.length + " ပိုင်း ရပါတယ်။ စာသား နှိပ်ပြီး ပြင်နိုင်ပါတယ်။", "ok");
+              if(state.usedModel){
+                var uml = $("usedModelLine");
+                uml.hidden = false;
+                uml.textContent = "သုံးခဲ့သော Model: " + state.usedModel;
+              }
+              toast("စာတန်း " + collected.length + " ပိုင်း ထုတ်ပြီးပါပြီ");
+            }
+          });
+        }).catch(function(err){
+          var msg = (err && err.message) || String(err);
+          if(/decode|Decoding|Unable to decode/i.test(msg) || err && err.name === "EncodingError"){
+            setAIStatus("ဒီ ဖိုင်ရဲ့ အသံကို browser က မဖတ်နိုင်ပါ။ MP4 (H.264 + AAC) သို့မဟုတ် MP3/WAV ဖိုင် ပြောင်း စမ်းကြည့်ပါ။", "err");
+          } else if(err && err.network){
+            var kept = state.cues.length ? " ရပြီးသား စာတန်း " + state.cues.length + " ပိုင်း editor ထဲမှာ ကျန်နေပါတယ်။" : "";
+            setAIStatus("Google Gemini ဆီ ချိတ်ဆက်လို့ မရပါ (Failed to fetch)။ ဒီကွန်ရက်က Google AI ကို ပိတ်ထားတာ၊ သို့မဟုတ် ချိတ်ဆက်မှု မတည်ငြိမ်တာ ဖြစ်နိုင်ပါတယ် — VPN ဖွင့်ပြီး သို့မဟုတ် ကွန်ရက် ပြောင်းပြီး ပြန်စမ်းကြည့်ပါ။" + kept, "err");
+          } else {
+            var detail = (err && err.status) ? ("HTTP " + err.status + " — " + msg) : msg;
+            setAIStatus("မအောင်မြင်ပါ: " + detail + " (ရနိုင်တဲ့ model အကုန် စမ်းပြီးပါပြီ)", "err");
+          }
+        }).finally(function(){
+          state.transcribing = false;
+          transcribeBtn.disabled = false;
+          setTimeout(function(){ setAIProgress(null); }, 900);
+        });
+      });
+
+      /* ================= video export (canvas + MediaRecorder) ================= */
+      var canvas = $("renderCanvas"), ctx2d = canvas.getContext("2d");
+      var exportBtn = $("exportBtn"), cancelBtn = $("cancelExportBtn"),
+          exportProgress = $("exportProgress"), renderBadge = $("renderBadge");
+      var exportState = null;
+
+      function firstFamily(stack){
+        var m = String(stack).match(/'([^']+)'|"([^"]+)"|^([^,]+)/);
+        return (m && (m[1] || m[2] || m[3]) || "sans-serif").trim();
+      }
+      function wrapLines(g, text, maxW){
+        var words = String(text).split(/\s+/).filter(Boolean), lines = [], cur = "";
+        words.forEach(function(w){
+          var trial = cur ? cur + " " + w : w;
+          if(g.measureText(trial).width <= maxW || !cur){ cur = trial; }
+          else { lines.push(cur); cur = w; }
+        });
+        if(cur) lines.push(cur);
+        if(!lines.length && text) lines = [text];
+        /* hard-break any single over-long word */
+        var out = [];
+        lines.forEach(function(line){
+          while(g.measureText(line).width > maxW && line.length > 1){
+            var cut = line.length - 1;
+            while(cut > 1 && g.measureText(line.slice(0, cut)).width > maxW) cut--;
+            out.push(line.slice(0, cut)); line = line.slice(cut);
+          }
+          out.push(line);
+        });
+        return out;
+      }
+      function roundRectPath(g, x, y, w, h, r){
+        r = Math.min(r, w / 2, h / 2);
+        g.beginPath();
+        g.moveTo(x + r, y);
+        g.arcTo(x + w, y, x + w, y + h, r);
+        g.arcTo(x + w, y + h, x, y + h, r);
+        g.arcTo(x, y + h, x, y, r);
+        g.arcTo(x, y, x + w, y, r);
+        g.closePath();
+      }
+      function drawSubtitles(g, W, H){ drawSubtitlesAt(g, W, H, video.currentTime, state.cues); }
+      function drawSubtitlesAt(g, W, H, t, list){
+        var c = cueAtIn(list, t);
+        if(!c || !String(c.text || "").trim()) return;
+        var st = state.style;
+        var sizePx = H * st.size / 100;
+        g.font = "700 " + sizePx + "px '" + firstFamily(st.font) + "'";
+        g.textAlign = "center"; g.textBaseline = "middle";
+        var lines = wrapLines(g, c.text, W * 0.88);
+        var lh = sizePx * 1.38, blockH = lines.length * lh;
+        /* Same relative anchor as the draggable preview box: posX / posY
+           are the % position of the subtitle block's center in the frame,
+           scaled here to the output resolution and clamped on-screen. */
+        var maxLineW = 0;
+        lines.forEach(function(l){ maxLineW = Math.max(maxLineW, g.measureText(l).width); });
+        var edge = Math.max(4, W * 0.01);
+        var cx = W * st.posX / 100;
+        cx = Math.max(maxLineW / 2 + edge, Math.min(W - maxLineW / 2 - edge, cx));
+        var blockTop = H * st.posY / 100 - blockH / 2;
+        blockTop = Math.max(H * 0.01, Math.min(H - blockH - H * 0.01, blockTop));
+        if(st.bg){
+          var padX = sizePx * 0.45, padY = sizePx * 0.18;
+          roundRectPath(g, cx - maxLineW / 2 - padX, blockTop - padY, maxLineW + padX * 2, blockH + padY * 2, sizePx * 0.22);
+          g.fillStyle = "rgba(0,0,0,0.58)"; g.fill();
+        }
+        lines.forEach(function(line, i){
+          var y = blockTop + lh * (i + 0.5);
+          if(!st.bg){
+            g.lineWidth = Math.max(2, sizePx / 14);
+            g.strokeStyle = "rgba(0,0,0,0.7)";
+            g.lineJoin = "round";
+            g.strokeText(line, cx, y);
+          }
+          g.fillStyle = st.color;
+          g.fillText(line, cx, y);
+        });
+      }
+      function setExportProgress(pct){
+        if(pct == null){ exportProgress.classList.remove("on"); exportProgress.querySelector("i").style.width = "0"; }
+        else { exportProgress.classList.add("on"); exportProgress.querySelector("i").style.width = Math.round(pct * 100) + "%"; }
+      }
+      function setExportStatus(msg, cls){
+        var el = $("exportStatus");
+        if(!el) return;
+        el.textContent = msg || "";
+        el.className = "status" + (cls ? " " + cls : "");
+        el.hidden = !msg;
+      }
+      function pickWebmMime(){
+        /* VP8 first: its WebM output opens in far more phone players, and
+           mobile MediaRecorder builds handle it more reliably than VP9 —
+           VP9 exports were coming out as a black screen on the user's phone.
+           WebM is only the fallback path: MP4 is always tried first. */
+        var candidates = ["video/webm;codecs=vp8,opus", "video/webm;codecs=vp9,opus", "video/webm"];
+        for(var i = 0; i < candidates.length; i++){
+          if(window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) return candidates[i];
+        }
+        return "";
+      }
+      function pickMp4Mime(){
+        /* A MediaRecorder MP4 mimeType means the browser itself muxes a
+           real MP4 (Safari, newer Chrome/Edge) — the preferred path. */
+        if(!window.MediaRecorder) return "";
+        var candidates = [
+          "video/mp4;codecs=avc1.640028,mp4a.40.2",
+          "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+          "video/mp4;codecs=avc1,mp4a.40.2",
+          "video/mp4"
+        ];
+        for(var i = 0; i < candidates.length; i++){
+          if(MediaRecorder.isTypeSupported(candidates[i])) return candidates[i];
+        }
+        return "";
+      }
+      /* mp4-muxer (classic build) loaded on demand from a CDN for the
+         WebCodecs MP4 path. If it cannot load, the global stays undefined
+         and export honestly falls back to WebM. */
+      var muxerLoadPromise = null;
+      function loadMuxer(){
+        if(window.Mp4Muxer) return Promise.resolve(true);
+        if(muxerLoadPromise) return muxerLoadPromise;
+        var urls = [
+          "https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js",
+          "https://unpkg.com/mp4-muxer@5.2.1/build/mp4-muxer.js"
+        ];
+        muxerLoadPromise = new Promise(function(resolve){
+          var i = 0;
+          (function next(){
+            if(window.Mp4Muxer){ resolve(true); return; }
+            if(i >= urls.length){ resolve(false); return; }
+            var s = document.createElement("script");
+            s.src = urls[i++];
+            s.onload = function(){ if(window.Mp4Muxer) resolve(true); else next(); };
+            s.onerror = function(){ next(); };
+            document.head.appendChild(s);
+          })();
+        });
+        return muxerLoadPromise;
+      }
+      function avcCodecString(W, H){
+        if(W >= 1920 || H >= 1080) return "avc1.640033";
+        if(W >= 1280 || H >= 720) return "avc1.640028";
+        if(W >= 854 || H >= 480) return "avc1.64001f";
+        return "avc1.42001e";
+      }
+      function pickAvcConfig(W, H){
+        var tries = [avcCodecString(W, H), "avc1.640028", "avc1.42001f", "avc1.42001e"];
+        var chain = Promise.resolve(null);
+        tries.forEach(function(codec){
+          chain = chain.then(function(found){
+            if(found) return found;
+            var cfg = { codec: codec, width: W, height: H, bitrate: 6 * 1000 * 1000, framerate: 30 };
+            return VideoEncoder.isConfigSupported(cfg).then(function(r){
+              return (r && r.supported) ? cfg : null;
+            }).catch(function(){ return null; });
+          });
+        });
+        return chain;
+      }
+      function pickAudioConfig(sr, ch){
+        if(!window.AudioEncoder) return Promise.resolve(null);
+        var tries = [
+          { codec: "mp4a.40.2", muxerCodec: "aac" },
+          { codec: "opus", muxerCodec: "opus" }
+        ];
+        var chain = Promise.resolve(null);
+        tries.forEach(function(t){
+          chain = chain.then(function(found){
+            if(found) return found;
+            var cfg = { codec: t.codec, sampleRate: sr, numberOfChannels: ch, bitrate: 128 * 1000 };
+            return AudioEncoder.isConfigSupported(cfg).then(function(r){
+              return (r && r.supported) ? { cfg: cfg, muxerCodec: t.muxerCodec } : null;
+            }).catch(function(){ return null; });
+          });
+        });
+        return chain;
+      }
+      /* Full WebCodecs MP4 plan, or null when this browser cannot do it.
+         The source audio is decoded up front: if it cannot be decoded or
+         encoded, return null so the caller falls back to the WebM recorder
+         (which carries the audio) instead of shipping a silent MP4. */
+      function prepareWebCodecs(W, H, file){
+        return loadMuxer().then(function(ok){
+          if(!ok || !window.VideoEncoder || !window.VideoFrame) return null;
+          return pickAvcConfig(W, H).then(function(vcfg){
+            if(!vcfg) return null;
+            return decodeAudio(file || state.videoFile).then(function(buf){
+              var ch = Math.min(2, buf.numberOfChannels || 1);
+              return pickAudioConfig(buf.sampleRate, ch).then(function(ac){
+                if(!ac) return null;
+                return { videoCfg: vcfg, audioBuf: buf, audioCfg: ac.cfg, muxerAudioCodec: ac.muxerCodec, channels: ch };
+              });
+            }).catch(function(){ return null; });
+          });
+        }).catch(function(){ return null; });
+      }
+      function encodeAudioIntoMuxer(prep, muxer){
+        return new Promise(function(resolve, reject){
+          var buf = prep.audioBuf, sr = buf.sampleRate, ch = prep.channels;
+          var enc = new AudioEncoder({
+            output: function(chunk, meta){ try { muxer.addAudioChunk(chunk, meta); } catch(e){} },
+            error: function(e){ reject(e); }
+          });
+          enc.configure(prep.audioCfg);
+          var frameSize = 1024, total = buf.length;
+          var chanData = [];
+          for(var c = 0; c < ch; c++) chanData.push(buf.getChannelData(c));
+          try {
+            for(var off = 0; off < total; off += frameSize){
+              var n = Math.min(frameSize, total - off);
+              var data = new Float32Array(n * ch);
+              for(var c2 = 0; c2 < ch; c2++) data.set(chanData[c2].subarray(off, off + n), c2 * n);
+              var ad = new AudioData({
+                format: "f32-planar", sampleRate: sr, numberOfFrames: n,
+                numberOfChannels: ch, timestamp: Math.round(off / sr * 1000000), data: data.buffer
+              });
+              enc.encode(ad);
+              ad.close();
+            }
+          } catch(e){ reject(e); return; }
+          enc.flush().then(function(){ try { enc.close(); } catch(e){} resolve(); }, reject);
+        });
+      }
+      var BLACK_FRAME_MSG = "Export မအောင်မြင်ပါ — ဗီဒီယို ဖရိမ်တွေ မရောက်လာပါ (အမည်း ဖရိမ်တွေပဲ ရပါတယ်)။ Chrome browser နဲ့ စမ်းကြည့်ပါ၊ render လုပ်နေတုန်း tab ကို ဖွင့်ထားပြီး screen မပိတ်ပါနဲ့။ SRT ဖိုင်တော့ ပုံမှန် ထုတ်နိုင်ပါတယ်။";
+      function stopExport(finish){
+        var es = exportState; if(!es) return;
+        exportState = null;
+        state.exporting = false;
+        cancelAnimationFrame(es.raf);
+        if(es.watchdog) clearInterval(es.watchdog);
+        video.removeEventListener("ended", es.onEnded);
+        video.pause();
+        renderBadge.classList.remove("on");
+        stage.classList.remove("exporting");
+        canvas.hidden = true;
+        exportBtn.disabled = false;
+        cancelBtn.hidden = true;
+        if(es.mode === "recorder" && es.recorder){
+          try { if(es.recorder.state !== "inactive") es.recorder.stop(); } catch(e){}
+        }
+        if(es.mode === "webcodecs" && es.encoder){
+          try { if(es.encoder.state !== "closed") es.encoder.close(); } catch(e){}
+        }
+        if(!finish) setExportProgress(null);
+      }
+      cancelBtn.addEventListener("click", function(){
+        if(exportState){ exportState.cancelled = true; stopExport(false); toast("Render ရပ်လိုက်ပါပြီ"); }
+      });
+      function beginExportUI(es){
+        exportState = es;
+        state.exporting = true;
+        exportBtn.disabled = true;
+        cancelBtn.hidden = false;
+        canvas.hidden = false;
+        renderBadge.classList.add("on");
+        stage.classList.add("exporting");
+        setExportProgress(0);
+        es.onEnded = function(){
+          setTimeout(function(){
+            if(exportState !== es) return;
+            if(es.mode === "webcodecs") finishWebCodecsExport(es);
+            else stopExport(true);
+          }, 250);
+        };
+        video.addEventListener("ended", es.onEnded);
+      }
+      /* Shared render loop for both export paths: draws the video frame,
+         samples it for the black-frame guard, composites the subtitles at
+         the dragged position, then lets the active encoder consume the
+         canvas via onFrame. A timer watchdog keeps frames flowing when
+         rAF is throttled (hidden tab / screen dimming). */
+      function startRenderLoop(es, onFrame){
+        var scratch = document.createElement("canvas");
+        scratch.width = 16; scratch.height = 16;
+        var sctx = scratch.getContext("2d", { willReadFrequently: true });
+        function sampleFrame(){
+          if(es.sawFrame || es.sampleBroken) return;
+          try {
+            sctx.drawImage(canvas, 0, 0, 16, 16);
+            var px = sctx.getImageData(0, 0, 16, 16).data;
+            for(var i = 0; i < px.length; i += 4){
+              if(px[i] > 10 || px[i + 1] > 10 || px[i + 2] > 10){ es.sawFrame = true; return; }
+            }
+          } catch(e){ es.sampleBroken = true; }
+        }
+        function drawFrame(){
+          /* Never let one bad draw kill the loop: previously an exception
+             from drawImage stopped every later frame, leaving the recorder
+             with only the black fill — a "successful" export that plays
+             back as a black screen. */
+          try {
+            ctx2d.fillStyle = "#000"; ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+            ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if(es.frameNo % 12 === 0) sampleFrame();
+            drawSubtitles(ctx2d, canvas.width, canvas.height);
+            if(onFrame) onFrame();
+          } catch(e){ /* keep looping; the frame check judges the result */ }
+          es.lastDrawAt = Date.now();
+          es.frameNo++;
+          if(isFinite(video.duration) && video.duration > 0) setExportProgress(video.currentTime / video.duration);
+        }
+        var started = false;
+        function begin(){
+          if(started || exportState !== es) return;
+          started = true;
+          var p = video.play();
+          if(p && p.catch) p.catch(function(){});
+          (function draw(){
+            if(exportState !== es) return;
+            drawFrame();
+            es.raf = requestAnimationFrame(draw);
+          })();
+          /* rAF stops while the tab/screen is not visible; keep the canvas
+             fed from a timer so the recording cannot freeze on black. */
+          es.watchdog = setInterval(function(){
+            if(exportState !== es) return;
+            if(Date.now() - es.lastDrawAt > 160) drawFrame();
+          }, 200);
+        }
+        video.pause();
+        video.currentTime = 0;
+        if(video.readyState >= 2) setTimeout(begin, 60);
+        else video.addEventListener("canplay", function h(){ video.removeEventListener("canplay", h); begin(); });
+        setTimeout(begin, 600); /* fallback if seek is slow */
+      }
+      function finishWebCodecsExport(es){
+        exportState = null;
+        state.exporting = false;
+        cancelAnimationFrame(es.raf);
+        if(es.watchdog) clearInterval(es.watchdog);
+        video.removeEventListener("ended", es.onEnded);
+        video.pause();
+        renderBadge.classList.remove("on");
+        stage.classList.remove("exporting");
+        canvas.hidden = true;
+        exportBtn.disabled = false;
+        cancelBtn.hidden = true;
+        setExportProgress(1);
+        es.encoder.flush().then(function(){
+          try { es.encoder.close(); } catch(e){}
+          /* Same black-frame guard as the recorder path: never report
+             success for a file whose frames all came out black. */
+          if(!es.sawFrame && !es.sampleBroken){
+            setExportProgress(null);
+            setExportStatus(BLACK_FRAME_MSG, "err");
+            toast("Export မအောင်မြင်ပါ — ဖရိမ်တွေ အမည်း ဖြစ်နေပါတယ်");
+            return;
+          }
+          es.muxer.finalize();
+          download(new Blob([es.target.buffer], { type: "video/mp4" }), baseName(state.videoFile) + "-subtitled.mp4");
+          setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+          toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          setTimeout(function(){ setExportProgress(null); }, 1200);
+        }).catch(function(){
+          setExportProgress(null);
+          setExportStatus("MP4 ထုတ်တာ နောက်ဆုံး အဆင့်မှာ မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။ SRT ဖိုင်တော့ ပုံမှန် ထုတ်နိုင်ပါတယ်။", "err");
+        });
+      }
+      function startRecorderExport(plan){
+        /* plan: { mime, format: "mp4" | "webm" } — MediaRecorder path, used
+           for native MP4 (preferred) and for the WebM fallback. */
+        if(!window.MediaRecorder || !canvas.captureStream){
+          state.exporting = false;
+          exportBtn.disabled = false;
+          setExportStatus("");
+          toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ။ SRT တော့ ထုတ်နိုင်ပါတယ်");
+          return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        var stream = canvas.captureStream(30);
+        try {
+          var vstream = (video.captureStream || video.mozCaptureStream) ? (video.captureStream ? video.captureStream() : video.mozCaptureStream()) : null;
+          if(vstream) vstream.getAudioTracks().forEach(function(t){ stream.addTrack(t); });
+        } catch(e){ /* video-only export */ }
+        var recorder;
+        try { recorder = new MediaRecorder(stream, plan.mime ? { mimeType: plan.mime, videoBitsPerSecond: 8 * 1000 * 1000 } : undefined); }
+        catch(e){
+          state.exporting = false;
+          exportBtn.disabled = false;
+          setExportStatus("");
+          toast("Recorder စလို့ မရပါ: " + e.message);
+          return;
+        }
+        if(plan.format === "webm"){
+          /* Honest up-front notice: this browser cannot produce MP4, so
+             the download will be a WebM file — never a renamed WebM. */
+          setExportStatus("ဒီ browser က MP4 တိုက်ရိုက် မထုတ်နိုင်လို့ WebM ဖိုင် ထုတ်ပေးပါမည် — စာတန်းနဲ့ အသံ အကုန် ပါပါမည်။ MP4 လိုချင်ရင် နောက်ဆုံး Chrome သို့မဟုတ် Safari နဲ့ စမ်းကြည့်ပါ။");
+          toast("MP4 မရလို့ WebM ဖိုင် ထုတ်ပေးပါမည်");
+        } else {
+          setExportStatus("");
+        }
+        var chunks = [];
+        recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
+        var es = { mode: "recorder", recorder: recorder, format: plan.format, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, recorderStarted: false,
+                   sawFrame: false, sampleBroken: false, frameNo: 0, lastDrawAt: 0 };
+        recorder.onstop = function(){
+          if(es.cancelled) return;
+          /* Never report success for a recording whose frames all came out
+             black — that is a capture failure on this browser/device, and
+             the user deserves an honest error, not a black video file. */
+          if(!es.sawFrame && !es.sampleBroken){
+            setExportProgress(null);
+            setExportStatus(BLACK_FRAME_MSG, "err");
+            toast("Export မအောင်မြင်ပါ — ဖရိမ်တွေ အမည်း ဖြစ်နေပါတယ်");
+            return;
+          }
+          setExportProgress(1);
+          var mt = recorder.mimeType || (plan.format === "mp4" ? "video/mp4" : "video/webm");
+          var ext = plan.format === "mp4" ? ".mp4" : ".webm";
+          download(new Blob(chunks, { type: mt }), baseName(state.videoFile) + "-subtitled" + ext);
+          if(plan.format === "mp4"){
+            setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+            toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          } else {
+            setExportStatus("စာတန်းပါ WebM ဗီဒီယို ထုတ်ပြီးပါပြီ။ ဖုန်း player မှာ အမည်း ပေါ်နေရင် Chrome သို့မဟုတ် VLC app နဲ့ ဖွင့်ကြည့်ပါ။", "ok");
+            toast("စာတန်းပါ WebM ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          }
+          setTimeout(function(){ setExportProgress(null); }, 1200);
+        };
+        beginExportUI(es);
+        startRenderLoop(es, function(){
+          if(!es.recorderStarted && video.readyState >= 2 && !video.paused){
+            es.recorderStarted = true;
+            try { recorder.start(400); } catch(e){}
+          }
+        });
+        setTimeout(function(){
+          if(exportState === es && !es.recorderStarted){
+            es.recorderStarted = true;
+            try { recorder.start(400); } catch(e){}
+          }
+        }, 3000);
+      }
+      function startWebCodecsExport(prep, W, H){
+        /* WebCodecs path: H.264 video + AAC/Opus audio muxed into a real
+           MP4 by mp4-muxer. The audio is encoded into the muxer before the
+           render starts; frames are encoded as the video plays through. */
+        canvas.width = W;
+        canvas.height = H;
+        var target = new Mp4Muxer.ArrayBufferTarget();
+        var muxer = new Mp4Muxer.Muxer({
+          target: target,
+          video: { codec: "avc", width: W, height: H, frameRate: 30 },
+          audio: { codec: prep.muxerAudioCodec, numberOfChannels: prep.channels, sampleRate: prep.audioBuf.sampleRate },
+          fastStart: "in-memory",
+          firstTimestampBehavior: "offset"
+        });
+        var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastKeyTs: -10000000, encoderError: null };
+        var encoder = new VideoEncoder({
+          output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
+          error: function(e){ es.encoderError = e; }
+        });
+        encoder.configure(prep.videoCfg);
+        es.encoder = encoder;
+        beginExportUI(es);
+        setExportStatus("MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
+        encodeAudioIntoMuxer(prep, muxer).then(function(){
+          if(exportState !== es) return;
+          setExportStatus("");
+          startRenderLoop(es, function(){
+            if(es.encoderError || encoder.state !== "configured") return;
+            if(encoder.encodeQueueSize > 4) return;
+            var ts = Math.round(video.currentTime * 1000000);
+            if(ts <= es.lastTs) return;
+            try {
+              var vf = new VideoFrame(canvas, { timestamp: ts, duration: 33333 });
+              var key = ts - es.lastKeyTs >= 2000000;
+              encoder.encode(vf, { keyFrame: key });
+              vf.close();
+              if(key) es.lastKeyTs = ts;
+              es.lastTs = ts;
+            } catch(e){ /* skip this frame */ }
+          });
+        }).catch(function(){
+          if(exportState !== es) return;
+          /* Audio encode failed after all — don't ship a silent MP4. Fall
+             back to the WebM recorder, which carries the audio, and that
+             path announces the format switch before it starts. */
+          stopExport(false);
+          startRecorderExport({ mime: pickWebmMime(), format: "webm" });
+        });
+      }
+      exportBtn.addEventListener("click", function(){
+        if(state.exporting) return;
+        if(!state.videoFile){ toast("အရင် ဗီဒီယို တင်ပါ"); return; }
+        var spEl = $("shortPlayer");
+        if(spEl && !spEl.paused) spEl.pause();
+        if(!window.MediaRecorder && !window.VideoEncoder){
+          toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ။ SRT တော့ ထုတ်နိုင်ပါတယ်"); return;
+        }
+        if(!video.videoWidth){ toast("ဗီဒီယို မ load ရသေးပါ — ခဏ စောင့်ပြီး ပြန်စမ်းပါ"); return; }
+
+        /* Reserve the export slot while the format plan is worked out —
+           planning (muxer download, codec probes, audio decode) is async,
+           and a second video must not load mid-plan. */
+        state.exporting = true;
+        exportBtn.disabled = true;
+        setExportStatus("Export နည်းလမ်း ရွေးနေပါတယ်…");
+
+        var ready = state.customFont ? document.fonts.load("700 40px '" + CUSTOM_FAMILY + "'") : Promise.resolve();
+        ready.catch(function(){}).then(function(){
+          /* 1) Browser-native MP4 recording (Safari, newer Chrome/Edge). */
+          var mp4Mime = pickMp4Mime();
+          if(mp4Mime){ startRecorderExport({ mime: mp4Mime, format: "mp4" }); return; }
+          /* 2) WebCodecs H.264 + mp4-muxer. H.264 needs even dimensions. */
+          var W = video.videoWidth - (video.videoWidth % 2);
+          var H = video.videoHeight - (video.videoHeight % 2);
+          if(window.VideoEncoder && window.VideoFrame && W > 0 && H > 0){
+            return prepareWebCodecs(W, H).then(function(prep){
+              if(prep) startWebCodecsExport(prep, W, H);
+              else startRecorderExport({ mime: pickWebmMime(), format: "webm" });
+            });
+          }
+          /* 3) Honest WebM fallback — announced before recording starts. */
+          startRecorderExport({ mime: pickWebmMime(), format: "webm" });
+        }).catch(function(){
+          state.exporting = false;
+          exportBtn.disabled = false;
+          setExportStatus("Export မစနိုင်ပါ — ပြန်စမ်းကြည့်ပါ။", "err");
+        });
+      });
+
+      /* ================= Short video maker (9:16) =================
+         Image (cover-fit to 1080×1920, slow Ken Burns zoom) + audio +
+         subtitles from the editor or an imported SRT, rendered through
+         the same MP4 pipeline as the main export: native MP4 recorder
+         first, then WebCodecs H.264 + mp4-muxer, then an honestly
+         announced WebM fallback — with the same black-frame guard. */
+      var shortPlayer = $("shortPlayer"), shortCanvas = $("shortCanvas"),
+          shortCtx = shortCanvas.getContext("2d"), shortSeek = $("shortSeek");
+      var shortExportState = null, shortRaf = 0;
+      var SHORT_W = 1080, SHORT_H = 1920;
+
+      function setShortProgress(pct){
+        var bar = $("shortProgress");
+        if(pct == null){ bar.classList.remove("on"); bar.querySelector("i").style.width = "0"; }
+        else { bar.classList.add("on"); bar.querySelector("i").style.width = Math.round(pct * 100) + "%"; }
+      }
+      function setShortStatus(msg, cls){
+        var el = $("shortStatus");
+        el.textContent = msg || "";
+        el.className = "status" + (cls ? " " + cls : "");
+        el.hidden = !msg;
+      }
+      function shortCues(){
+        return state.shortSubSource === "file" ? (state.shortSrtCues || []) : state.cues;
+      }
+      function shortDur(){
+        var d = shortPlayer.duration;
+        return (isFinite(d) && d > 0) ? d : (state.shortAudioDur || 0);
+      }
+      function updateShortSubInfo(){
+        var el = $("shortSubInfo");
+        if(!el) return;
+        if(state.shortSubSource === "file"){
+          el.textContent = state.shortSrtCues
+            ? "SRT ဖိုင်က စာတန်း " + state.shortSrtCues.length + " ပိုင်း ရထားပါတယ်။"
+            : "SRT ဖိုင် မတင်ရသေးပါ။";
+        } else {
+          el.textContent = "Editor ထဲက စာတန်း " + state.cues.length + " ပိုင်း သုံးပါမည်။";
+        }
+      }
+      function updateShortAudioInfo(){
+        if(!state.shortAudioFile) return;
+        var d = shortDur();
+        $("shortAudioInfo").textContent = "အသံ: " + state.shortAudioFile.name + (d ? " · " + fmtClock(d) : "");
+      }
+      function updateShortTime(){
+        $("shortTimeLabel").textContent = fmtClock(shortPlayer.currentTime || 0) + " / " + fmtClock(shortDur());
+        if(document.activeElement !== shortSeek) shortSeek.value = shortPlayer.currentTime || 0;
+      }
+
+      /* ----- frame drawing (shared by preview + both export paths) ----- */
+      function drawShortFrame(g, W, H, t, cues){
+        g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+        var img = state.shortImg;
+        if(img && img.naturalWidth){
+          var dur = shortDur();
+          var p = dur > 0 ? Math.max(0, Math.min(1, t / dur)) : 0;
+          var zoom = 1 + 0.15 * p; /* slow Ken Burns push-in */
+          var scale = Math.max(W / img.naturalWidth, H / img.naturalHeight) * zoom;
+          var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+          g.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+        } else {
+          g.fillStyle = "rgba(255,255,255,.55)";
+          g.font = "600 " + Math.round(H * 0.03) + "px " + firstFamily(state.style.font);
+          g.textAlign = "center"; g.textBaseline = "middle";
+          g.fillText("နောက်ခံပုံ တင်ပါ", W / 2, H / 2);
+        }
+        drawSubtitlesAt(g, W, H, t, cues);
+      }
+      function drawShortPreview(){
+        drawShortFrame(shortCtx, shortCanvas.width, shortCanvas.height, shortPlayer.currentTime || 0, shortCues());
+      }
+
+      /* ----- inputs: image / audio / subtitle source ----- */
+      $("shortImageBtn").addEventListener("click", function(){ $("shortImageInput").click(); });
+      $("shortImageInput").addEventListener("change", function(){
+        var f = this.files[0]; this.value = "";
+        if(!f) return;
+        var url = URL.createObjectURL(f);
+        var img = new Image();
+        img.onload = function(){
+          state.shortImg = img;
+          state.shortImgName = f.name;
+          var thumb = $("shortThumb");
+          thumb.innerHTML = "";
+          var im = document.createElement("img");
+          im.src = url; im.alt = f.name;
+          thumb.appendChild(im);
+          var ratio = img.naturalWidth / img.naturalHeight;
+          var info = "ပုံ: " + f.name + " (" + img.naturalWidth + "×" + img.naturalHeight + ")";
+          info += Math.abs(ratio - 9 / 16) < 0.02
+            ? " — 9:16 အချိုး မှန်ပါတယ်။"
+            : " — 9:16 မဟုတ်လို့ 1080×1920 ထဲ အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။";
+          $("shortImageInfo").textContent = info;
+          drawShortPreview();
+        };
+        img.onerror = function(){ URL.revokeObjectURL(url); toast("ဒီ ပုံဖိုင်ကို မဖတ်နိုင်ပါ"); };
+        img.src = url;
+      });
+      function setShortAudio(file){
+        if(state.shortAudioURL) URL.revokeObjectURL(state.shortAudioURL);
+        state.shortAudioFile = file;
+        state.shortAudioURL = URL.createObjectURL(file);
+        state.shortAudioDur = 0;
+        shortPlayer.src = state.shortAudioURL;
+        shortPlayer.load();
+        $("shortAudioInfo").textContent = "အသံ: " + file.name;
+      }
+      $("shortAudioBtn").addEventListener("click", function(){ $("shortAudioInput").click(); });
+      $("shortAudioInput").addEventListener("change", function(){
+        if(this.files[0]) setShortAudio(this.files[0]);
+        this.value = "";
+      });
+      $("shortUseCurrentBtn").addEventListener("click", function(){
+        if(state.videoFile) setShortAudio(state.videoFile);
+      });
+      segWire("shortSubSeg", "src", function(v){
+        state.shortSubSource = v;
+        $("shortSrtBtn").hidden = v !== "file";
+        updateShortSubInfo();
+        drawShortPreview();
+      });
+      $("shortSrtBtn").addEventListener("click", function(){ $("shortSrtInput").click(); });
+      $("shortSrtInput").addEventListener("change", function(){
+        var f = this.files[0]; this.value = "";
+        if(!f) return;
+        f.text().then(function(txt){
+          var parsed = parseSRTText(txt);
+          if(!parsed.length){ toast("SRT ဖိုင်ထဲက စာတန်း မဖတ်နိုင်ပါ"); return; }
+          state.shortSrtCues = parsed;
+          updateShortSubInfo();
+          drawShortPreview();
+          toast("Short အတွက် စာတန်း " + parsed.length + " ပိုင်း တင်ပြီးပါပြီ");
+        }).catch(function(){ toast("ဖိုင် မဖတ်နိုင်ပါ"); });
+      });
+
+      /* ----- preview transport ----- */
+      function syncShortPlayIcon(){
+        var playing = !shortPlayer.paused && !shortPlayer.ended;
+        $("shortPlayIcon").style.display = playing ? "none" : "";
+        $("shortPauseIcon").style.display = playing ? "" : "none";
+      }
+      function shortPreviewLoop(){
+        drawShortPreview();
+        updateShortTime();
+        if(!shortPlayer.paused && !shortPlayer.ended && !state.shortExporting){
+          shortRaf = requestAnimationFrame(shortPreviewLoop);
+        }
+      }
+      $("shortPlayBtn").addEventListener("click", function(){
+        if(!state.shortAudioFile){ toast("အရင် အသံဖိုင် ရွေးပါ"); return; }
+        if(shortPlayer.paused) shortPlayer.play(); else shortPlayer.pause();
+      });
+      shortSeek.addEventListener("input", function(){
+        if(shortPlayer.src) shortPlayer.currentTime = Number(shortSeek.value);
+      });
+      shortPlayer.addEventListener("play", function(){
+        syncShortPlayIcon();
+        if(!state.shortExporting){
+          cancelAnimationFrame(shortRaf);
+          shortRaf = requestAnimationFrame(shortPreviewLoop);
+        }
+      });
+      shortPlayer.addEventListener("pause", function(){ syncShortPlayIcon(); drawShortPreview(); updateShortTime(); });
+      shortPlayer.addEventListener("ended", function(){ syncShortPlayIcon(); drawShortPreview(); updateShortTime(); });
+      shortPlayer.addEventListener("seeked", function(){ drawShortPreview(); updateShortTime(); });
+      shortPlayer.addEventListener("loadedmetadata", function(){
+        state.shortAudioDur = shortPlayer.duration || 0;
+        shortSeek.max = shortPlayer.duration || 0;
+        updateShortTime();
+        updateShortAudioInfo();
+        drawShortPreview();
+      });
+
+      /* ----- export plumbing (mirrors the main video export) ----- */
+      function beginShortExportUI(es){
+        shortExportState = es;
+        state.exporting = true;
+        state.shortExporting = true;
+        video.pause();
+        $("shortExportBtn").disabled = true;
+        $("shortCancelBtn").hidden = false;
+        canvas.hidden = false;
+        renderBadge.classList.add("on");
+        stage.classList.add("exporting");
+        setShortProgress(0);
+        es.onEnded = function(){
+          setTimeout(function(){
+            if(shortExportState !== es) return;
+            if(es.mode === "webcodecs") finishShortWebCodecs(es);
+            else stopShortExport(true);
+          }, 250);
+        };
+        shortPlayer.addEventListener("ended", es.onEnded);
+      }
+      function stopShortExport(finish){
+        var es = shortExportState; if(!es) return;
+        shortExportState = null;
+        state.exporting = false;
+        state.shortExporting = false;
+        cancelAnimationFrame(es.raf);
+        if(es.watchdog) clearInterval(es.watchdog);
+        shortPlayer.removeEventListener("ended", es.onEnded);
+        shortPlayer.pause();
+        renderBadge.classList.remove("on");
+        stage.classList.remove("exporting");
+        canvas.hidden = true;
+        $("shortExportBtn").disabled = false;
+        $("shortCancelBtn").hidden = true;
+        if(es.mode === "recorder" && es.recorder){
+          try { if(es.recorder.state !== "inactive") es.recorder.stop(); } catch(e){}
+        }
+        if(es.mode === "webcodecs" && es.encoder){
+          try { if(es.encoder.state !== "closed") es.encoder.close(); } catch(e){}
+        }
+        if(!finish) setShortProgress(null);
+      }
+      $("shortCancelBtn").addEventListener("click", function(){
+        if(shortExportState){ shortExportState.cancelled = true; stopShortExport(false); toast("Render ရပ်လိုက်ပါပြီ"); }
+      });
+      /* Render loop: draws the short frame (image + Ken Burns + subtitles)
+         from the audio element's clock, samples frames for the same
+         black-frame guard as the main export, timer watchdog included. */
+      function startShortRenderLoop(es, onFrame){
+        var scratch = document.createElement("canvas");
+        scratch.width = 16; scratch.height = 16;
+        var sctx = scratch.getContext("2d", { willReadFrequently: true });
+        function sampleFrame(){
+          if(es.sawFrame || es.sampleBroken) return;
+          try {
+            sctx.drawImage(canvas, 0, 0, 16, 16);
+            var px = sctx.getImageData(0, 0, 16, 16).data;
+            for(var i = 0; i < px.length; i += 4){
+              if(px[i] > 10 || px[i + 1] > 10 || px[i + 2] > 10){ es.sawFrame = true; return; }
+            }
+          } catch(e){ es.sampleBroken = true; }
+        }
+        function drawFrame(){
+          try {
+            drawShortFrame(ctx2d, canvas.width, canvas.height, shortPlayer.currentTime || 0, es.cues);
+            if(es.frameNo % 12 === 0) sampleFrame();
+            if(onFrame) onFrame();
+          } catch(e){ /* keep looping; the frame check judges the result */ }
+          es.lastDrawAt = Date.now();
+          es.frameNo++;
+          var d = shortDur();
+          if(d > 0) setShortProgress((shortPlayer.currentTime || 0) / d);
+        }
+        var started = false;
+        function begin(){
+          if(started || shortExportState !== es) return;
+          started = true;
+          var p = shortPlayer.play();
+          if(p && p.catch) p.catch(function(){});
+          (function draw(){
+            if(shortExportState !== es) return;
+            drawFrame();
+            es.raf = requestAnimationFrame(draw);
+          })();
+          es.watchdog = setInterval(function(){
+            if(shortExportState !== es) return;
+            if(Date.now() - es.lastDrawAt > 160) drawFrame();
+          }, 200);
+        }
+        shortPlayer.pause();
+        try { shortPlayer.currentTime = 0; } catch(e){}
+        if(shortPlayer.readyState >= 2) setTimeout(begin, 60);
+        else shortPlayer.addEventListener("canplay", function h(){ shortPlayer.removeEventListener("canplay", h); begin(); });
+        setTimeout(begin, 600);
+      }
+      function finishShortWebCodecs(es){
+        shortExportState = null;
+        state.exporting = false;
+        state.shortExporting = false;
+        cancelAnimationFrame(es.raf);
+        if(es.watchdog) clearInterval(es.watchdog);
+        shortPlayer.removeEventListener("ended", es.onEnded);
+        shortPlayer.pause();
+        renderBadge.classList.remove("on");
+        stage.classList.remove("exporting");
+        canvas.hidden = true;
+        $("shortExportBtn").disabled = false;
+        $("shortCancelBtn").hidden = true;
+        setShortProgress(1);
+        es.encoder.flush().then(function(){
+          try { es.encoder.close(); } catch(e){}
+          if(!es.sawFrame && !es.sampleBroken){
+            setShortProgress(null);
+            setShortStatus(BLACK_FRAME_MSG, "err");
+            toast("Export မအောင်မြင်ပါ — ဖရိမ်တွေ အမည်း ဖြစ်နေပါတယ်");
+            return;
+          }
+          es.muxer.finalize();
+          download(new Blob([es.target.buffer], { type: "video/mp4" }), baseName(state.shortAudioFile) + "-short.mp4");
+          setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+          toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          setTimeout(function(){ setShortProgress(null); }, 1200);
+        }).catch(function(){
+          setShortProgress(null);
+          setShortStatus("MP4 ထုတ်တာ နောက်ဆုံး အဆင့်မှာ မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။", "err");
+        });
+      }
+      function shortAudioCaptureOK(){
+        return !!(shortPlayer.captureStream || shortPlayer.mozCaptureStream);
+      }
+      function startShortRecorderExport(plan){
+        /* plan: { mime, format: "mp4" | "webm", cues } */
+        if(!window.MediaRecorder || !canvas.captureStream){
+          state.exporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortStatus("");
+          toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ");
+          return;
+        }
+        canvas.width = SHORT_W;
+        canvas.height = SHORT_H;
+        var stream = canvas.captureStream(30);
+        var hasAudio = false;
+        try {
+          var astream = shortPlayer.captureStream ? shortPlayer.captureStream() : (shortPlayer.mozCaptureStream ? shortPlayer.mozCaptureStream() : null);
+          if(astream){ astream.getAudioTracks().forEach(function(t){ stream.addTrack(t); hasAudio = true; }); }
+        } catch(e){ /* no audio capture on this browser */ }
+        if(!hasAudio){
+          /* Audio is the whole point of a Short — never ship it silent. */
+          state.exporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortStatus("ဒီ browser က အသံကို ဗီဒီယိုထဲ ထည့်မပေးနိုင်ပါ — နောက်ဆုံး Chrome နဲ့ စမ်းကြည့်ပါ။", "err");
+          return;
+        }
+        var recorder;
+        try { recorder = new MediaRecorder(stream, plan.mime ? { mimeType: plan.mime, videoBitsPerSecond: 10 * 1000 * 1000 } : undefined); }
+        catch(e){
+          state.exporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortStatus("");
+          toast("Recorder စလို့ မရပါ: " + e.message);
+          return;
+        }
+        if(plan.format === "webm"){
+          setShortStatus("ဒီ browser က MP4 တိုက်ရိုက် မထုတ်နိုင်လို့ WebM ဖိုင် ထုတ်ပေးပါမည် — ပုံ၊ စာတန်းနဲ့ အသံ အကုန် ပါပါမည်။ MP4 လိုချင်ရင် နောက်ဆုံး Chrome သို့မဟုတ် Safari နဲ့ စမ်းကြည့်ပါ။");
+          toast("MP4 မရလို့ WebM ဖိုင် ထုတ်ပေးပါမည်");
+        } else {
+          setShortStatus("");
+        }
+        var chunks = [];
+        recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
+        var es = { mode: "recorder", recorder: recorder, format: plan.format, cues: plan.cues, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, recorderStarted: false,
+                   sawFrame: false, sampleBroken: false, frameNo: 0, lastDrawAt: 0 };
+        recorder.onstop = function(){
+          if(es.cancelled) return;
+          if(!es.sawFrame && !es.sampleBroken){
+            setShortProgress(null);
+            setShortStatus(BLACK_FRAME_MSG, "err");
+            toast("Export မအောင်မြင်ပါ — ဖရိမ်တွေ အမည်း ဖြစ်နေပါတယ်");
+            return;
+          }
+          setShortProgress(1);
+          var mt = recorder.mimeType || (plan.format === "mp4" ? "video/mp4" : "video/webm");
+          var ext = plan.format === "mp4" ? ".mp4" : ".webm";
+          download(new Blob(chunks, { type: mt }), baseName(state.shortAudioFile) + "-short" + ext);
+          if(plan.format === "mp4"){
+            setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+            toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          } else {
+            setShortStatus("စာတန်းပါ Short WebM ဗီဒီယို ထုတ်ပြီးပါပြီ။ ဖုန်း player မှာ အမည်း ပေါ်နေရင် Chrome သို့မဟုတ် VLC app နဲ့ ဖွင့်ကြည့်ပါ။", "ok");
+            toast("Short WebM ဗီဒီယို ထုတ်ပြီးပါပြီ");
+          }
+          setTimeout(function(){ setShortProgress(null); }, 1200);
+        };
+        beginShortExportUI(es);
+        startShortRenderLoop(es, function(){
+          if(!es.recorderStarted && shortPlayer.readyState >= 2 && !shortPlayer.paused){
+            es.recorderStarted = true;
+            try { recorder.start(400); } catch(e){}
+          }
+        });
+        setTimeout(function(){
+          if(shortExportState === es && !es.recorderStarted){
+            es.recorderStarted = true;
+            try { recorder.start(400); } catch(e){}
+          }
+        }, 3000);
+      }
+      function startShortWebCodecsExport(prep, cues){
+        canvas.width = SHORT_W;
+        canvas.height = SHORT_H;
+        var target = new Mp4Muxer.ArrayBufferTarget();
+        var muxer = new Mp4Muxer.Muxer({
+          target: target,
+          video: { codec: "avc", width: SHORT_W, height: SHORT_H, frameRate: 30 },
+          audio: { codec: prep.muxerAudioCodec, numberOfChannels: prep.channels, sampleRate: prep.audioBuf.sampleRate },
+          fastStart: "in-memory",
+          firstTimestampBehavior: "offset"
+        });
+        var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, cues: cues, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastKeyTs: -10000000, encoderError: null };
+        var encoder = new VideoEncoder({
+          output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
+          error: function(e){ es.encoderError = e; }
+        });
+        encoder.configure(prep.videoCfg);
+        es.encoder = encoder;
+        beginShortExportUI(es);
+        setShortStatus("MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
+        encodeAudioIntoMuxer(prep, muxer).then(function(){
+          if(shortExportState !== es) return;
+          setShortStatus("");
+          startShortRenderLoop(es, function(){
+            if(es.encoderError || encoder.state !== "configured") return;
+            if(encoder.encodeQueueSize > 4) return;
+            var ts = Math.round((shortPlayer.currentTime || 0) * 1000000);
+            if(ts <= es.lastTs) return;
+            try {
+              var vf = new VideoFrame(canvas, { timestamp: ts, duration: 33333 });
+              var key = ts - es.lastKeyTs >= 2000000;
+              encoder.encode(vf, { keyFrame: key });
+              vf.close();
+              if(key) es.lastKeyTs = ts;
+              es.lastTs = ts;
+            } catch(e){ /* skip this frame */ }
+          });
+        }).catch(function(){
+          if(shortExportState !== es) return;
+          /* Audio encode failed — fall back to a recorder path that
+             carries the audio, or say so honestly. */
+          stopShortExport(false);
+          var mp4Mime = pickMp4Mime();
+          if(mp4Mime && shortAudioCaptureOK()) startShortRecorderExport({ mime: mp4Mime, format: "mp4", cues: cues });
+          else if(pickWebmMime() && shortAudioCaptureOK()) startShortRecorderExport({ mime: pickWebmMime(), format: "webm", cues: cues });
+          else setShortStatus("အသံ encode မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။", "err");
+        });
+      }
+      function failShortPlan(){
+        state.exporting = false;
+        $("shortExportBtn").disabled = false;
+        setShortStatus("ဒီ browser က Short ဗီဒီယို (အသံပါ) မထုတ်နိုင်ပါ — နောက်ဆုံး Chrome နဲ့ စမ်းကြည့်ပါ။ SRT ဖိုင်နဲ့ အသံ သီးသန့် သုံးနိုင်ပါတယ်။", "err");
+      }
+      $("shortExportBtn").addEventListener("click", function(){
+        if(state.exporting) return;
+        if(!state.shortImg){ toast("အရင် နောက်ခံပုံ တင်ပါ"); return; }
+        if(!state.shortAudioFile){ toast("အရင် အသံဖိုင် ရွေးပါ"); return; }
+        if(state.shortSubSource === "file" && !state.shortSrtCues){
+          toast("SRT ဖိုင် အရင် တင်ပါ — သို့မဟုတ် Editor စာတန်း သုံးပါ"); return;
+        }
+        if(!window.MediaRecorder && !window.VideoEncoder){
+          toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ"); return;
+        }
+        /* Reserve the shared export slot while the plan is worked out. */
+        state.exporting = true;
+        $("shortExportBtn").disabled = true;
+        setShortStatus("Export နည်းလမ်း ရွေးနေပါတယ်…");
+        var cues = shortCues().slice();
+        var ready = state.customFont ? document.fonts.load("700 40px '" + CUSTOM_FAMILY + "'") : Promise.resolve();
+        ready.catch(function(){}).then(function(){
+          /* 1) Browser-native MP4 recording, if it can also capture the audio. */
+          var mp4Mime = pickMp4Mime();
+          if(mp4Mime && shortAudioCaptureOK()){
+            startShortRecorderExport({ mime: mp4Mime, format: "mp4", cues: cues });
+            return;
+          }
+          /* 2) WebCodecs H.264 + mp4-muxer (audio encoded from the file). */
+          if(window.VideoEncoder && window.VideoFrame){
+            return prepareWebCodecs(SHORT_W, SHORT_H, state.shortAudioFile).then(function(prep){
+              if(prep){ startShortWebCodecsExport(prep, cues); return; }
+              if(pickWebmMime() && shortAudioCaptureOK()){
+                startShortRecorderExport({ mime: pickWebmMime(), format: "webm", cues: cues });
+                return;
+              }
+              failShortPlan();
+            });
+          }
+          /* 3) Honest WebM fallback — announced before recording starts. */
+          if(pickWebmMime() && shortAudioCaptureOK()){
+            startShortRecorderExport({ mime: pickWebmMime(), format: "webm", cues: cues });
+            return;
+          }
+          failShortPlan();
+        }).catch(function(){
+          state.exporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortStatus("Export မစနိုင်ပါ — ပြန်စမ်းကြည့်ပါ။", "err");
+        });
+      });
+
+      updateShortSubInfo();
+      drawShortPreview();
+    })();
+    </script>
+  </body>
+</html>
