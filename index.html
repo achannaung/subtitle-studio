@@ -443,10 +443,10 @@
               <label class="flabel">စာတန်း ရင်းမြစ်</label>
               <div class="seg" id="shortSubSeg">
                 <button type="button" data-src="editor" class="on">Editor ထဲက စာတန်း</button>
-                <button type="button" data-src="file">SRT / TXT ဖိုင်</button>
+                <button type="button" data-src="file">SRT / TXT ([00:00:00]) ဖိုင်</button>
               </div>
               <div class="fontfile-row">
-                <button class="btn small" id="shortSrtBtn" type="button" hidden>SRT / TXT ဖိုင် တင်မည်</button>
+                <button class="btn small" id="shortSrtBtn" type="button" hidden>SRT / TXT ([00:00:00]) ဖိုင် တင်မည်</button>
                 <span class="fontfile-name" id="shortSubInfo"></span>
               </div>
 
@@ -501,11 +501,11 @@
               </div>
               <div class="cue-tools">
                 <button class="btn small" id="addCueBtn" type="button">+ ယခု နေရာမှာ Cue ထည့်</button>
-                <button class="btn small" id="importSrtBtn" type="button">SRT / TXT တင်မည်</button>
+                <button class="btn small" id="importSrtBtn" type="button">SRT / TXT ([00:00:00]) တင်မည်</button>
                 <button class="btn small" id="exportSrtBtn" type="button">SRT ထုတ်မည်</button>
               </div>
               <div class="cue-list" id="cueList">
-                <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT/TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
+                <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT သို့မဟုတ် [00:00:00] အချိန်အမှတ်ပါ TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
               </div>
             </section>
           </div>
@@ -745,7 +745,7 @@
         if(!state.cues.length){
           var empty = document.createElement("div");
           empty.className = "cue-empty";
-          empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT/TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
+          empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT သို့မဟုတ် [00:00:00] အချိန်အမှတ်ပါ TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
           cueList.appendChild(empty);
           return;
         }
@@ -841,28 +841,69 @@
         download(new Blob([buildSRT()], { type: "text/plain;charset=utf-8" }), baseName(state.videoFile) + ".srt");
         toast("SRT ဖိုင် ထုတ်ပြီးပါပြီ");
       });
-      /* Shared SRT parser — used by the editor import and by the Short
-         maker's own subtitle-file source. */
-      function parseSRTText(txt){
-        var blocks = String(txt).replace(/\r\n/g, "\n").split(/\n\s*\n/), parsed = [];
-        blocks.forEach(function(b){
-          var lines = b.split("\n").filter(function(l){ return l.trim() !== ""; });
-          var ti = lines.findIndex(function(l){ return l.indexOf("-->") >= 0; });
-          if(ti < 0) return;
-          var parts = lines[ti].split("-->");
-          var s = parseTimeStr(parts[0]), e2 = parseTimeStr(parts[1]);
-          if(isNaN(s) || isNaN(e2)) return;
-          parsed.push(newCue(s, e2, lines.slice(ti + 1).join("\n")));
+      /* Shared subtitle parser — used by the editor import and by the Short
+         maker's own subtitle-file source. Auto-detects the format:
+         1) SRT timing lines (-->), parsed as SRT;
+         2) Bracket timestamps [HH:MM:SS] or [MM:SS] — the format produced
+            by transcript .txt files (e.g. the Burmese Audio Transcriber),
+            where each marker starts a segment and the text that follows it
+            (until the next marker) is that segment's text. */
+      function parseBracketText(txt, mediaDuration){
+        var re = /\[(\d+):(\d{2})(?::(\d{2}))?(?:[.,](\d{1,3}))?\]/g;
+        var matches = [], m;
+        while((m = re.exec(txt)) !== null){
+          var t, frac = m[4] ? Number("0." + m[4]) : 0;
+          if(m[3] !== undefined){
+            t = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + frac;
+          } else {
+            t = Number(m[1]) * 60 + Number(m[2]) + frac;
+          }
+          if(isNaN(t)) continue;
+          matches.push({ start: t, idx: m.index, endIdx: m.index + m[0].length });
+        }
+        if(!matches.length) return [];
+        var segs = [];
+        matches.forEach(function(mt, i){
+          var raw = txt.slice(mt.endIdx, i + 1 < matches.length ? matches[i + 1].idx : txt.length);
+          var clean = raw.replace(/\s+/g, " ").trim();
+          if(!clean) return;
+          segs.push({ start: mt.start, text: clean });
+        });
+        var parsed = [];
+        segs.forEach(function(sg, i){
+          var end;
+          if(i + 1 < segs.length) end = segs[i + 1].start;
+          else if(isFinite(mediaDuration) && mediaDuration > sg.start) end = mediaDuration;
+          else end = sg.start + 5;
+          if(end <= sg.start) end = sg.start + 5;
+          parsed.push(newCue(sg.start, end, sg.text));
         });
         return parsed;
+      }
+      function parseSRTText(txt, mediaDuration){
+        txt = String(txt == null ? "" : txt);
+        if(txt.indexOf("-->") >= 0){
+          var blocks = txt.replace(/\r\n/g, "\n").split(/\n\s*\n/), parsed = [];
+          blocks.forEach(function(b){
+            var lines = b.split("\n").filter(function(l){ return l.trim() !== ""; });
+            var ti = lines.findIndex(function(l){ return l.indexOf("-->") >= 0; });
+            if(ti < 0) return;
+            var parts = lines[ti].split("-->");
+            var s = parseTimeStr(parts[0]), e2 = parseTimeStr(parts[1]);
+            if(isNaN(s) || isNaN(e2)) return;
+            parsed.push(newCue(s, e2, lines.slice(ti + 1).join("\n")));
+          });
+          return parsed;
+        }
+        return parseBracketText(txt, mediaDuration);
       }
       $("importSrtBtn").addEventListener("click", function(){ $("srtInput").click(); });
       $("srtInput").addEventListener("change", function(){
         var f = $("srtInput").files[0]; $("srtInput").value = "";
         if(!f) return;
         f.text().then(function(txt){
-          var parsed = parseSRTText(txt);
-          if(!parsed.length){ toast("ဖိုင်ထဲမှာ SRT ပုံစံ အချိန်အမှတ် (-->) မတွေ့ပါ — စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ"); return; }
+          var parsed = parseSRTText(txt, (isFinite(video.duration) && video.duration > 0) ? video.duration : NaN);
+          if(!parsed.length){ toast("စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ — SRT ပုံစံ (-->) သို့မဟုတ် [00:00:00] ပုံစံ အချိန်အမှတ် ပါတဲ့ ဖိုင် တင်ပေးပါ"); return; }
           state.cues = parsed; renderCues(); updateOverlay();
           toast("စာတန်း " + parsed.length + " ပိုင်း တင်ပြီးပါပြီ");
         }).catch(function(){ toast("ဖိုင် မဖတ်နိုင်ပါ"); });
@@ -1828,8 +1869,8 @@
         if(!el) return;
         if(state.shortSubSource === "file"){
           el.textContent = state.shortSrtCues
-            ? "SRT/TXT ဖိုင်က စာတန်း " + state.shortSrtCues.length + " ပိုင်း ရထားပါတယ်။"
-            : "SRT/TXT ဖိုင် မတင်ရသေးပါ။";
+            ? "စာတန်းဖိုင်က စာတန်း " + state.shortSrtCues.length + " ပိုင်း ရထားပါတယ်။"
+            : "SRT သို့မဟုတ် [00:00:00] အချိန်အမှတ်ပါ TXT ဖိုင် မတင်ရသေးပါ။";
         } else {
           el.textContent = "Editor ထဲက စာတန်း " + state.cues.length + " ပိုင်း သုံးပါမည်။";
         }
@@ -1921,8 +1962,8 @@
         var f = this.files[0]; this.value = "";
         if(!f) return;
         f.text().then(function(txt){
-          var parsed = parseSRTText(txt);
-          if(!parsed.length){ toast("ဖိုင်ထဲမှာ SRT ပုံစံ အချိန်အမှတ် (-->) မတွေ့ပါ — စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ"); return; }
+          var parsed = parseSRTText(txt, shortDur());
+          if(!parsed.length){ toast("စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ — SRT ပုံစံ (-->) သို့မဟုတ် [00:00:00] ပုံစံ အချိန်အမှတ် ပါတဲ့ ဖိုင် တင်ပေးပါ"); return; }
           state.shortSrtCues = parsed;
           updateShortSubInfo();
           drawShortPreview();
@@ -2238,7 +2279,7 @@
         if(!state.shortImg){ toast("အရင် နောက်ခံပုံ တင်ပါ"); return; }
         if(!state.shortAudioFile){ toast("အရင် အသံဖိုင် ရွေးပါ"); return; }
         if(state.shortSubSource === "file" && !state.shortSrtCues){
-          toast("SRT/TXT ဖိုင် အရင် တင်ပါ — သို့မဟုတ် Editor စာတန်း သုံးပါ"); return;
+          toast("စာတန်းဖိုင် (SRT / [00:00:00] TXT) အရင် တင်ပါ — သို့မဟုတ် Editor စာတန်း သုံးပါ"); return;
         }
         if(!window.MediaRecorder && !window.VideoEncoder){
           toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ"); return;
