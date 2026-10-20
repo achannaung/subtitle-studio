@@ -443,10 +443,10 @@
               <label class="flabel">စာတန်း ရင်းမြစ်</label>
               <div class="seg" id="shortSubSeg">
                 <button type="button" data-src="editor" class="on">Editor ထဲက စာတန်း</button>
-                <button type="button" data-src="file">SRT ဖိုင်</button>
+                <button type="button" data-src="file">SRT / TXT ဖိုင်</button>
               </div>
               <div class="fontfile-row">
-                <button class="btn small" id="shortSrtBtn" type="button" hidden>SRT ဖိုင် တင်မည်</button>
+                <button class="btn small" id="shortSrtBtn" type="button" hidden>SRT / TXT ဖိုင် တင်မည်</button>
                 <span class="fontfile-name" id="shortSubInfo"></span>
               </div>
 
@@ -501,11 +501,11 @@
               </div>
               <div class="cue-tools">
                 <button class="btn small" id="addCueBtn" type="button">+ ယခု နေရာမှာ Cue ထည့်</button>
-                <button class="btn small" id="importSrtBtn" type="button">SRT တင်မည်</button>
+                <button class="btn small" id="importSrtBtn" type="button">SRT / TXT တင်မည်</button>
                 <button class="btn small" id="exportSrtBtn" type="button">SRT ထုတ်မည်</button>
               </div>
               <div class="cue-list" id="cueList">
-                <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
+                <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT/TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
               </div>
             </section>
           </div>
@@ -514,11 +514,11 @@
 
       <input type="file" id="videoInput" accept="video/*,.mkv" hidden />
       <input type="file" id="audioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
-      <input type="file" id="srtInput" accept=".srt,text/plain" hidden />
+      <input type="file" id="srtInput" accept=".srt,.txt,text/plain" hidden />
       <input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden />
       <input type="file" id="shortImageInput" accept="image/*" hidden />
       <input type="file" id="shortAudioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
-      <input type="file" id="shortSrtInput" accept=".srt,text/plain" hidden />
+      <input type="file" id="shortSrtInput" accept=".srt,.txt,text/plain" hidden />
       <div id="toast" role="status"></div>
     </main>
 
@@ -745,7 +745,7 @@
         if(!state.cues.length){
           var empty = document.createElement("div");
           empty.className = "cue-empty";
-          empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
+          empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT/TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
           cueList.appendChild(empty);
           return;
         }
@@ -862,7 +862,7 @@
         if(!f) return;
         f.text().then(function(txt){
           var parsed = parseSRTText(txt);
-          if(!parsed.length){ toast("SRT ဖိုင်ထဲက စာတန်း မဖတ်နိုင်ပါ"); return; }
+          if(!parsed.length){ toast("ဖိုင်ထဲမှာ SRT ပုံစံ အချိန်အမှတ် (-->) မတွေ့ပါ — စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ"); return; }
           state.cues = parsed; renderCues(); updateOverlay();
           toast("စာတန်း " + parsed.length + " ပိုင်း တင်ပြီးပါပြီ");
         }).catch(function(){ toast("ဖိုင် မဖတ်နိုင်ပါ"); });
@@ -1828,8 +1828,8 @@
         if(!el) return;
         if(state.shortSubSource === "file"){
           el.textContent = state.shortSrtCues
-            ? "SRT ဖိုင်က စာတန်း " + state.shortSrtCues.length + " ပိုင်း ရထားပါတယ်။"
-            : "SRT ဖိုင် မတင်ရသေးပါ။";
+            ? "SRT/TXT ဖိုင်က စာတန်း " + state.shortSrtCues.length + " ပိုင်း ရထားပါတယ်။"
+            : "SRT/TXT ဖိုင် မတင်ရသေးပါ။";
         } else {
           el.textContent = "Editor ထဲက စာတန်း " + state.cues.length + " ပိုင်း သုံးပါမည်။";
         }
@@ -1922,7 +1922,7 @@
         if(!f) return;
         f.text().then(function(txt){
           var parsed = parseSRTText(txt);
-          if(!parsed.length){ toast("SRT ဖိုင်ထဲက စာတန်း မဖတ်နိုင်ပါ"); return; }
+          if(!parsed.length){ toast("ဖိုင်ထဲမှာ SRT ပုံစံ အချိန်အမှတ် (-->) မတွေ့ပါ — စာတန်း ဖိုင်အဖြစ် မဖတ်နိုင်ပါ"); return; }
           state.shortSrtCues = parsed;
           updateShortSubInfo();
           drawShortPreview();
@@ -2238,7 +2238,7 @@
         if(!state.shortImg){ toast("အရင် နောက်ခံပုံ တင်ပါ"); return; }
         if(!state.shortAudioFile){ toast("အရင် အသံဖိုင် ရွေးပါ"); return; }
         if(state.shortSubSource === "file" && !state.shortSrtCues){
-          toast("SRT ဖိုင် အရင် တင်ပါ — သို့မဟုတ် Editor စာတန်း သုံးပါ"); return;
+          toast("SRT/TXT ဖိုင် အရင် တင်ပါ — သို့မဟုတ် Editor စာတန်း သုံးပါ"); return;
         }
         if(!window.MediaRecorder && !window.VideoEncoder){
           toast("ဒီ browser က ဗီဒီယို export မထောက်ပံ့ပါ — Chrome / Edge စမ်းကြည့်ပါ"); return;
