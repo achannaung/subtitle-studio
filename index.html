@@ -267,7 +267,17 @@
       .short-cta-text b{display:block;font-size:15px;margin-bottom:2px}
       .short-cta-text span{color:var(--muted);font-size:13.5px}
       .stage.audio-mode video{display:none}
-      #audioStage{position:relative;height:210px}
+      /* Audio mode uses a vertical 9:16 frame — the same proportions as
+         the 1080x1920 Short export — instead of a wide strip, so the
+         waveform, subtitle box and logo preview exactly where they will
+         land in the exported Short. Width is capped by a ~70vh height
+         budget and the frame is centered in the column. */
+      .stage.audio-mode{
+        aspect-ratio:9/16;
+        width:min(100%, calc(70vh * 9 / 16));
+        margin-inline:auto;
+      }
+      #audioStage{position:absolute;inset:0}
       #waveCanvas{position:absolute;inset:0;width:100%;height:100%}
       #wavePlayhead{position:absolute;top:0;bottom:0;left:0;width:2px;background:var(--accent);opacity:.9;z-index:2}
       .audio-stage-label{
@@ -783,8 +793,12 @@
           return;
         }
         var n = peaks.length, bw = W / n;
+        /* Portrait 9:16 frame: keep the bars in a band around the
+           vertical centre rather than stretching them over the full
+           height of the tall frame. */
+        var band = H * 0.5;
         for(var i = 0; i < n; i++){
-          var bh = Math.max(2 * dpr, peaks[i] * H * 0.92);
+          var bh = Math.max(2 * dpr, peaks[i] * band);
           g.fillRect(i * bw + bw * 0.22, mid - bh / 2, Math.max(1, bw * 0.56), bh);
         }
       }
@@ -1662,6 +1676,201 @@
           enc.flush().then(function(){ try { enc.close(); } catch(e){} resolve(); }, reject);
         });
       }
+      /* fixMp4Headers(buf, fallbackSeconds)
+         Repairs the mvhd/tkhd/mdhd duration fields of an exported MP4.
+         Why: the browser-native MediaRecorder MP4 muxer ships a
+         FRAGMENTED MP4 whose mvhd duration is 0 and whose tkhd/mdhd
+         durations are millisecond leftovers (~3.6s) even though every
+         sample is present — players that scan samples play the full file,
+         but Facebook, CapCut and KineMaster trust the headers and report
+         ~0:03 / refuse the clip. Ground truth per track, in order: the
+         stts table total (progressive files), the moof fragment timeline
+         (tfdt + trun sample durations, fragmented files), else the known
+         media duration passed in. All rewrites are in place (same byte
+         length). Returns { buf, videoWidth, videoHeight, videoSeconds,
+         audioSeconds, movieSeconds } or null when unparseable. */
+      function fixMp4Headers(buf, fallbackSeconds) {
+        try {
+          var u8 = new Uint8Array(buf);
+          var dv = new DataView(buf);
+          function typeAt(off) {
+            return String.fromCharCode(u8[off], u8[off + 1], u8[off + 2], u8[off + 3]);
+          }
+          function boxAt(off) {
+            var size = dv.getUint32(off);
+            var hdr = 8;
+            if (size === 1) { size = dv.getUint32(off + 8) * 4294967296 + dv.getUint32(off + 12); hdr = 16; }
+            else if (size === 0) { size = buf.byteLength - off; }
+            return { size: size, type: typeAt(off + 4), hdr: hdr };
+          }
+          function findChild(start, end, type) {
+            var off = start;
+            while (off + 8 <= end) {
+              var b = boxAt(off);
+              if (b.size < 8) break;
+              if (b.type === type) return { off: off, size: b.size, hdr: b.hdr };
+              off += b.size;
+            }
+            return null;
+          }
+          function children(start, end, type) {
+            var out = [], off = start;
+            while (off + 8 <= end) {
+              var b = boxAt(off);
+              if (b.size < 8) break;
+              if (b.type === type) out.push({ off: off, size: b.size, hdr: b.hdr });
+              off += b.size;
+            }
+            return out;
+          }
+          function writeDur(off, ver, value) {
+            value = Math.max(0, Math.round(value));
+            if (ver === 1) {
+              dv.setUint32(off, Math.floor(value / 4294967296));
+              dv.setUint32(off + 4, value % 4294967296);
+            } else {
+              dv.setUint32(off, value % 4294967296);
+            }
+          }
+          function flagsAt(contentOff) {
+            return (u8[contentOff + 1] << 16) | (u8[contentOff + 2] << 8) | u8[contentOff + 3];
+          }
+          var moov = null, off = 0, moofs = [];
+          while (off + 8 <= buf.byteLength) {
+            var tb = boxAt(off);
+            if (tb.size < 8) break;
+            if (tb.type === "moov") moov = { off: off, size: tb.size, hdr: tb.hdr };
+            if (tb.type === "moof") moofs.push({ off: off, size: tb.size, hdr: tb.hdr });
+            off += tb.size;
+          }
+          if (!moov) return null;
+          var mStart = moov.off + moov.hdr, mEnd = moov.off + moov.size;
+          var mvhd = findChild(mStart, mEnd, "mvhd");
+          if (!mvhd) return null;
+          var mvC = mvhd.off + mvhd.hdr, mvVer = u8[mvC];
+          var mvTimescale = dv.getUint32(mvC + (mvVer === 1 ? 20 : 12));
+          if (!mvTimescale) return null;
+          var trexDur = {};
+          var mvex = findChild(mStart, mEnd, "mvex");
+          if (mvex) {
+            children(mvex.off + mvex.hdr, mvex.off + mvex.size, "trex").forEach(function (tx) {
+              var c = tx.off + tx.hdr;
+              trexDur[dv.getUint32(c + 4)] = dv.getUint32(c + 12);
+            });
+          }
+          var fragEnd = {};
+          moofs.forEach(function (mf) {
+            children(mf.off + mf.hdr, mf.off + mf.size, "traf").forEach(function (traf) {
+              var tStart = traf.off + traf.hdr, tEnd = traf.off + traf.size;
+              var tfhd = findChild(tStart, tEnd, "tfhd");
+              var tfdt = findChild(tStart, tEnd, "tfdt");
+              if (!tfhd || !tfdt) return;
+              var hc = tfhd.off + tfhd.hdr, hf = flagsAt(hc);
+              var trackId = dv.getUint32(hc + 4);
+              var p = hc + 8, defDur = 0;
+              if (hf & 0x000001) p += 8;
+              if (hf & 0x000002) p += 4;
+              if (hf & 0x000008) { defDur = dv.getUint32(p); p += 4; }
+              if (!defDur) defDur = trexDur[trackId] || 0;
+              var dc = tfdt.off + tfdt.hdr;
+              var base = u8[dc] === 1
+                ? dv.getUint32(dc + 4) * 4294967296 + dv.getUint32(dc + 8)
+                : dv.getUint32(dc + 4);
+              var fragDur = 0;
+              children(tStart, tEnd, "trun").forEach(function (trun) {
+                var rc = trun.off + trun.hdr, rf = flagsAt(rc);
+                var count = dv.getUint32(rc + 4), q = rc + 8;
+                if (rf & 0x000001) q += 4;
+                if (rf & 0x000004) q += 4;
+                for (var i = 0; i < count; i++) {
+                  if (rf & 0x000100) { fragDur += dv.getUint32(q); q += 4; }
+                  else if (defDur) fragDur += defDur;
+                  if (rf & 0x000200) q += 4;
+                  if (rf & 0x000400) q += 4;
+                  if (rf & 0x000800) q += 4;
+                }
+              });
+              var endUnits = base + fragDur;
+              if (endUnits > (fragEnd[trackId] || 0)) fragEnd[trackId] = endUnits;
+            });
+          });
+          var info = { buf: buf, videoWidth: 0, videoHeight: 0, videoSeconds: 0, audioSeconds: 0, movieSeconds: 0 };
+          var maxSeconds = 0;
+          children(mStart, mEnd, "trak").forEach(function (trak) {
+            var tkStart = trak.off + trak.hdr, tkEnd = trak.off + trak.size;
+            var tkhd = findChild(tkStart, tkEnd, "tkhd");
+            var mdia = findChild(tkStart, tkEnd, "mdia");
+            if (!mdia || !tkhd) return;
+            var dStart = mdia.off + mdia.hdr, dEnd = mdia.off + mdia.size;
+            var mdhd = findChild(dStart, dEnd, "mdhd");
+            var hdlr = findChild(dStart, dEnd, "hdlr");
+            var minf = findChild(dStart, dEnd, "minf");
+            if (!mdhd || !hdlr) return;
+            var tkC = tkhd.off + tkhd.hdr, tkVer = u8[tkC];
+            var trackId = dv.getUint32(tkC + (tkVer === 1 ? 20 : 12));
+            var mdC = mdhd.off + mdhd.hdr, mdVer = u8[mdC];
+            var mdTs = dv.getUint32(mdC + (mdVer === 1 ? 20 : 12));
+            if (!mdTs) return;
+            var totalUnits = 0;
+            if (minf) {
+              var stbl = findChild(minf.off + minf.hdr, minf.off + minf.size, "stbl");
+              if (stbl) {
+                var stts = findChild(stbl.off + stbl.hdr, stbl.off + stbl.size, "stts");
+                if (stts) {
+                  var sC = stts.off + stts.hdr;
+                  var cnt = dv.getUint32(sC + 4);
+                  for (var i = 0; i < cnt; i++) {
+                    totalUnits += dv.getUint32(sC + 8 + i * 8) * dv.getUint32(sC + 12 + i * 8);
+                  }
+                }
+              }
+            }
+            var seconds = 0;
+            if (totalUnits > 0) seconds = totalUnits / mdTs;
+            else if (fragEnd[trackId] > 0) seconds = fragEnd[trackId] / mdTs;
+            else seconds = fallbackSeconds || 0;
+            if (seconds <= 0) return;
+            /* Encoders love to inflate the final chunk's duration (the
+               last frame "held" for hundreds of ms past the timeline).
+               When the true media duration is known, trim that tail so
+               the headers match the content the user made. */
+            if (fallbackSeconds > 0 && seconds > fallbackSeconds + 0.05) seconds = fallbackSeconds + 0.05;
+            writeDur(mdC + (mdVer === 1 ? 24 : 16), mdVer, seconds * mdTs);
+            writeDur(tkC + (tkVer === 1 ? 28 : 20), tkVer, seconds * mvTimescale);
+            var handler = typeAt(hdlr.off + hdlr.hdr + 8);
+            if (handler === "vide") {
+              info.videoWidth = dv.getUint32(tkhd.off + tkhd.size - 8) / 65536;
+              info.videoHeight = dv.getUint32(tkhd.off + tkhd.size - 4) / 65536;
+              info.videoSeconds = seconds;
+            }
+            if (handler === "soun") info.audioSeconds = seconds;
+            if (seconds > maxSeconds) maxSeconds = seconds;
+          });
+          if (maxSeconds <= 0) return null;
+          writeDur(mvC + (mvVer === 1 ? 24 : 16), mvVer, maxSeconds * mvTimescale);
+          info.movieSeconds = maxSeconds;
+          return info;
+        } catch (e) { return null; }
+      }
+      /* Deliver a finished MP4: repair its header durations from the real
+         timeline first, verify the video dimensions when the caller pins
+         them (Shorts must be exactly 1080×1920), then download. Falls back
+         to the untouched blob if the file cannot be parsed. */
+      function deliverMp4(rawBlob, filename, knownSeconds, expectW, expectH, onOk, onBadDims) {
+        rawBlob.arrayBuffer().then(function (ab) {
+          var info = null;
+          try { info = fixMp4Headers(ab, knownSeconds || 0); } catch (e) { info = null; }
+          if (info && expectW && (Math.round(info.videoWidth) !== expectW || Math.round(info.videoHeight) !== expectH)) {
+            if (onBadDims) onBadDims(info);
+            return;
+          }
+          download(info ? new Blob([info.buf], { type: "video/mp4" }) : rawBlob, filename);
+          if (onOk) onOk(info);
+        }).catch(function () {
+          download(rawBlob, filename);
+          if (onOk) onOk(null);
+        });
+      }
       var BLACK_FRAME_MSG = "Export မအောင်မြင်ပါ — ဗီဒီယို ဖရိမ်တွေ မရောက်လာပါ (အမည်း ဖရိမ်တွေပဲ ရပါတယ်)။ Chrome browser နဲ့ စမ်းကြည့်ပါ၊ render လုပ်နေတုန်း tab ကို ဖွင့်ထားပြီး screen မပိတ်ပါနဲ့။ SRT ဖိုင်တော့ ပုံမှန် ထုတ်နိုင်ပါတယ်။";
       function stopExport(finish){
         var es = exportState; if(!es) return;
@@ -1777,6 +1986,22 @@
         exportBtn.disabled = false;
         cancelBtn.hidden = true;
         setExportProgress(1);
+        /* Slow encoders drop intermediate frames while their queue is
+           full; make sure the video track still spans the whole timeline
+           by encoding the held final frame at the final 30fps slot before
+           flushing — otherwise, on a slow device, the video track can end
+           seconds before the audio does. */
+        try {
+          var totalSec = (isFinite(video.duration) && video.duration > 0) ? video.duration : (es.knownSeconds || 0);
+          var finalSlot = Math.round(totalSec * 30) - 1;
+          if(es.encoder && es.encoder.state === "configured" && finalSlot > es.lastSlot){
+            var fts = Math.round(finalSlot * 1000000 / 30);
+            var lastVf = new VideoFrame(canvas, { timestamp: fts, duration: 33333 });
+            es.encoder.encode(lastVf, { keyFrame: true });
+            lastVf.close();
+            es.lastSlot = finalSlot; es.lastTs = fts;
+          }
+        } catch(e){ /* best effort — the header repair still reports the truth */ }
         es.encoder.flush().then(function(){
           try { es.encoder.close(); } catch(e){}
           /* Same black-frame guard as the recorder path: never report
@@ -1788,10 +2013,15 @@
             return;
           }
           es.muxer.finalize();
-          download(new Blob([es.target.buffer], { type: "video/mp4" }), baseName(state.videoFile) + "-subtitled.mp4");
-          setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
-          toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
-          setTimeout(function(){ setExportProgress(null); }, 1200);
+          deliverMp4(new Blob([es.target.buffer], { type: "video/mp4" }),
+            baseName(state.videoFile) + "-subtitled.mp4",
+            (isFinite(video.duration) && video.duration > 0) ? video.duration : (es.knownSeconds || 0),
+            0, 0,
+            function(){
+              setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+              toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+              setTimeout(function(){ setExportProgress(null); }, 1200);
+            }, null);
         }).catch(function(){
           setExportProgress(null);
           setExportStatus("MP4 ထုတ်တာ နောက်ဆုံး အဆင့်မှာ မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။ SRT ဖိုင်တော့ ပုံမှန် ထုတ်နိုင်ပါတယ်။", "err");
@@ -1850,6 +2080,19 @@
           setExportProgress(1);
           var mt = recorder.mimeType || (plan.format === "mp4" ? "video/mp4" : "video/webm");
           var ext = plan.format === "mp4" ? ".mp4" : ".webm";
+          if(plan.format === "mp4"){
+            /* Browser-native MP4 muxers can write broken header durations
+               (mvhd 0, ~3s track durations) — repair before download. */
+            deliverMp4(new Blob(chunks, { type: mt }), baseName(state.videoFile) + "-subtitled.mp4",
+              (isFinite(video.duration) && video.duration > 0) ? video.duration : 0,
+              0, 0,
+              function(){
+                setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+                toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+                setTimeout(function(){ setExportProgress(null); }, 1200);
+              }, null);
+            return;
+          }
           download(new Blob(chunks, { type: mt }), baseName(state.videoFile) + "-subtitled" + ext);
           if(plan.format === "mp4"){
             setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
@@ -1890,7 +2133,8 @@
         });
         var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
-                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastKeyTs: -10000000, encoderError: null };
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration : 0 };
         var encoder = new VideoEncoder({
           output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
           error: function(e){ es.encoderError = e; }
@@ -1905,7 +2149,13 @@
           startRenderLoop(es, function(){
             if(es.encoderError || encoder.state !== "configured") return;
             if(encoder.encodeQueueSize > 4) return;
-            var ts = Math.round(video.currentTime * 1000000);
+            /* Feed frames on an exact 30fps timestamp grid (µs), not raw
+               media-clock values: editors and Facebook read the resulting
+               constant frame rate and sample table cleanly. */
+            var slot = Math.round((video.currentTime || 0) * 30);
+            if(slot <= es.lastSlot) return;
+            es.lastSlot = slot;
+            var ts = Math.round(slot * 1000000 / 30);
             if(ts <= es.lastTs) return;
             try {
               var vf = new VideoFrame(canvas, { timestamp: ts, duration: 33333 });
@@ -1944,18 +2194,24 @@
 
         var ready = ensureSelectedFontLoaded();
         ready.catch(function(){}).then(function(){
-          /* 1) Browser-native MP4 recording (Safari, newer Chrome/Edge). */
-          var mp4Mime = pickMp4Mime();
-          if(mp4Mime){ startRecorderExport({ mime: mp4Mime, format: "mp4" }); return; }
-          /* 2) WebCodecs H.264 + mp4-muxer. H.264 needs even dimensions. */
+          /* 1) WebCodecs H.264 + mp4-muxer — preferred: it writes a
+             progressive MP4 with correct header durations and an exact
+             30fps sample table. (The browser-native MediaRecorder MP4
+             muxer ships fragmented files whose mvhd/track durations are
+             wrong — Facebook/CapCut read ~0:03 from them — so it is only
+             a fallback now, and its output is header-repaired too.) */
           var W = video.videoWidth - (video.videoWidth % 2);
           var H = video.videoHeight - (video.videoHeight % 2);
+          var mp4Mime = pickMp4Mime();
           if(window.VideoEncoder && window.VideoFrame && W > 0 && H > 0){
             return prepareWebCodecs(W, H).then(function(prep){
-              if(prep) startWebCodecsExport(prep, W, H);
-              else startRecorderExport({ mime: pickWebmMime(), format: "webm" });
+              if(prep){ startWebCodecsExport(prep, W, H); return; }
+              if(mp4Mime){ startRecorderExport({ mime: mp4Mime, format: "mp4" }); return; }
+              startRecorderExport({ mime: pickWebmMime(), format: "webm" });
             });
           }
+          /* 2) Browser-native MP4 recording (Safari, newer Chrome/Edge). */
+          if(mp4Mime){ startRecorderExport({ mime: mp4Mime, format: "mp4" }); return; }
           /* 3) Honest WebM fallback — announced before recording starts. */
           startRecorderExport({ mime: pickWebmMime(), format: "webm" });
         }).catch(function(){
@@ -1973,9 +2229,11 @@
          sequence optionally loops until the soundtrack ends, otherwise
          it plays once and holds the final item's last frame) + audio +
          subtitles from the editor or an imported SRT, rendered through
-         the same MP4 pipeline as the main export: native MP4 recorder
-         first, then WebCodecs H.264 + mp4-muxer, then an honestly
-         announced WebM fallback — with the same black-frame guard. */
+         the same MP4 pipeline as the main export: WebCodecs H.264 +
+         mp4-muxer first, then the native MP4 recorder, then an honestly
+         announced WebM fallback — with the same black-frame guard. Every
+         MP4 passes through fixMp4Headers before download, and Shorts are
+         verified to be exactly 1080×1920. */
       var shortPlayer = $("shortPlayer"), shortCanvas = $("shortCanvas"),
           shortCtx = shortCanvas.getContext("2d"), shortSeek = $("shortSeek");
       var SHORT_BG_MAX = 5;
@@ -2508,6 +2766,20 @@
         $("shortExportBtn").disabled = false;
         $("shortCancelBtn").hidden = true;
         setShortProgress(1);
+        /* Same final-frame guarantee as the main export: the video track
+           must span the full audio timeline even if a slow encoder had
+           to drop intermediate frames. */
+        try {
+          var totalSecS = es.knownSeconds || shortDur() || 0;
+          var finalSlotS = Math.round(totalSecS * 30) - 1;
+          if(es.encoder && es.encoder.state === "configured" && finalSlotS > es.lastSlot){
+            var ftsS = Math.round(finalSlotS * 1000000 / 30);
+            var lastVfS = new VideoFrame(canvas, { timestamp: ftsS, duration: 33333 });
+            es.encoder.encode(lastVfS, { keyFrame: true });
+            lastVfS.close();
+            es.lastSlot = finalSlotS; es.lastTs = ftsS;
+          }
+        } catch(e){ /* best effort — the header repair still reports the truth */ }
         es.encoder.flush().then(function(){
           try { es.encoder.close(); } catch(e){}
           if(!es.sawFrame && !es.sampleBroken){
@@ -2517,10 +2789,20 @@
             return;
           }
           es.muxer.finalize();
-          download(new Blob([es.target.buffer], { type: "video/mp4" }), baseName(state.shortAudioFile) + "-short.mp4");
-          setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
-          toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
-          setTimeout(function(){ setShortProgress(null); }, 1200);
+          deliverMp4(new Blob([es.target.buffer], { type: "video/mp4" }),
+            baseName(state.shortAudioFile) + "-short.mp4",
+            es.knownSeconds || shortDur() || 0,
+            SHORT_W, SHORT_H,
+            function(){
+              setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+              toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+              setTimeout(function(){ setShortProgress(null); }, 1200);
+            },
+            function(info){
+              setShortProgress(null);
+              setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (1080×1920 ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
+              toast("Short အရွယ်အစား မမှန်ပါ");
+            });
         }).catch(function(){
           setShortProgress(null);
           setShortStatus("MP4 ထုတ်တာ နောက်ဆုံး အဆင့်မှာ မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။", "err");
@@ -2584,6 +2866,22 @@
           setShortProgress(1);
           var mt = recorder.mimeType || (plan.format === "mp4" ? "video/mp4" : "video/webm");
           var ext = plan.format === "mp4" ? ".mp4" : ".webm";
+          if(plan.format === "mp4"){
+            deliverMp4(new Blob(chunks, { type: mt }), baseName(state.shortAudioFile) + "-short.mp4",
+              shortDur() || state.shortAudioDur || 0,
+              SHORT_W, SHORT_H,
+              function(){
+                setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+                toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
+                setTimeout(function(){ setShortProgress(null); }, 1200);
+              },
+              function(info){
+                setShortProgress(null);
+                setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (1080×1920 ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
+                toast("Short အရွယ်အစား မမှန်ပါ");
+              });
+            return;
+          }
           download(new Blob(chunks, { type: mt }), baseName(state.shortAudioFile) + "-short" + ext);
           if(plan.format === "mp4"){
             setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
@@ -2621,7 +2919,8 @@
         });
         var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, cues: cues, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
-                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastKeyTs: -10000000, encoderError: null };
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration : 0 };
         var encoder = new VideoEncoder({
           output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
           error: function(e){ es.encoderError = e; }
@@ -2636,7 +2935,12 @@
           startShortRenderLoop(es, function(){
             if(es.encoderError || encoder.state !== "configured") return;
             if(encoder.encodeQueueSize > 4) return;
-            var ts = Math.round((shortPlayer.currentTime || 0) * 1000000);
+            /* Exact 30fps timestamp grid (µs) from the audio clock — see
+               the main export for why raw clock values are not fed. */
+            var slot = Math.round((shortPlayer.currentTime || 0) * 30);
+            if(slot <= es.lastSlot) return;
+            es.lastSlot = slot;
+            var ts = Math.round(slot * 1000000 / 30);
             if(ts <= es.lastTs) return;
             try {
               var vf = new VideoFrame(canvas, { timestamp: ts, duration: 33333 });
@@ -2680,22 +2984,30 @@
         var cues = shortCues().slice();
         var ready = ensureSelectedFontLoaded();
         ready.catch(function(){}).then(function(){
-          /* 1) Browser-native MP4 recording, if it can also capture the audio. */
-          var mp4Mime = pickMp4Mime();
-          if(mp4Mime && shortAudioCaptureOK()){
-            startShortRecorderExport({ mime: mp4Mime, format: "mp4", cues: cues });
-            return;
-          }
-          /* 2) WebCodecs H.264 + mp4-muxer (audio encoded from the file). */
+          /* 1) WebCodecs H.264 + mp4-muxer — preferred (correct headers,
+             exact 1080×1920, 30fps); the native MP4 recorder's muxer
+             writes broken durations, so it is only a fallback and its
+             output is header-repaired before download. */
           if(window.VideoEncoder && window.VideoFrame){
             return prepareWebCodecs(SHORT_W, SHORT_H, state.shortAudioFile).then(function(prep){
               if(prep){ startShortWebCodecsExport(prep, cues); return; }
+              var mp4Mime2 = pickMp4Mime();
+              if(mp4Mime2 && shortAudioCaptureOK()){
+                startShortRecorderExport({ mime: mp4Mime2, format: "mp4", cues: cues });
+                return;
+              }
               if(pickWebmMime() && shortAudioCaptureOK()){
                 startShortRecorderExport({ mime: pickWebmMime(), format: "webm", cues: cues });
                 return;
               }
               failShortPlan();
             });
+          }
+          /* 2) Browser-native MP4 recording, if it can also capture the audio. */
+          var mp4Mime = pickMp4Mime();
+          if(mp4Mime && shortAudioCaptureOK()){
+            startShortRecorderExport({ mime: mp4Mime, format: "mp4", cues: cues });
+            return;
           }
           /* 3) Honest WebM fallback — announced before recording starts. */
           if(pickWebmMime() && shortAudioCaptureOK()){
