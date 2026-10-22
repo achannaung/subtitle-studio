@@ -320,6 +320,7 @@
       .bg-item-btns .mini-btn:disabled:hover{border-color:var(--line)}
       .short-preview-wrap{display:flex;justify-content:center;margin:14px 0 4px}
       #shortCanvas{width:min(300px,84vw);height:auto;border-radius:12px;background:#000;box-shadow:var(--shadow)}
+      #shortCanvas.wide{width:min(560px,92vw)}
       .short-transport{display:flex;align-items:center;gap:10px;margin:8px 0 2px}
       .short-transport input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
       .short-transport .time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
@@ -356,12 +357,12 @@
         <div class="steps">
           <div class="step"><span class="n">1</span><b>ဖိုင် တင်</b><span>ဗီဒီယို သို့မဟုတ် အသံဖိုင်ကို ရွေးပါ — အသံဖိုင်ပဲ ဆိုရင်လည်း .srt ထုတ်လို့ရပါတယ်</span></div>
           <div class="step"><span class="n">2</span><b>AI စာသား ထုတ်</b><span>Gemini က အသံကို စာတန်း အပိုင်းလိုက် အလိုအလျောက် ခွဲပေးမည် — ပြီးရင် ကြိုက်သလို ပြင်နိုင်သည်</span></div>
-          <div class="step"><span class="n">3</span><b>ထုတ်ယူ</b><span>.srt ဖိုင် သီးသန့်၊ စာတန်း မြှုပ်ထားတဲ့ ဗီဒီယို (MP4)၊ သို့မဟုတ် 9:16 Short ဗီဒီယို ထုတ်နိုင်သည်</span></div>
+          <div class="step"><span class="n">3</span><b>ထုတ်ယူ</b><span>.srt ဖိုင် သီးသန့်၊ စာတန်း မြှုပ်ထားတဲ့ ဗီဒီယို (MP4)၊ သို့မဟုတ် Short ဗီဒီယို (9:16 / 16:9) ထုတ်နိုင်သည်</span></div>
         </div>
         <div class="short-cta">
           <div class="short-cta-text">
-            <b>Short ဗီဒီယို (9:16) ဖန်တီးချင်ပါသလား?</b>
-            <span>အသံဖိုင် အရင် တင်ပါ — ပြီးရင် ပုံ တစ်ပုံ ထည့်ပြီး စာတန်းပါ vertical Short ထုတ်နိုင်ပါပြီ။</span>
+            <b>Short ဗီဒီယို (9:16 / 16:9) ဖန်တီးချင်ပါသလား?</b>
+            <span>အသံဖိုင် အရင် တင်ပါ — ပြီးရင် ပုံ တစ်ပုံ ထည့်ပြီး စာတန်းပါ Short ထုတ်နိုင်ပါပြီ။</span>
           </div>
           <button class="btn primary" id="shortCtaBtn" type="button">အသံဖိုင် တင်ပြီး စတင်မည်</button>
         </div>
@@ -465,7 +466,7 @@
 
             <section class="card" aria-labelledby="logoH">
               <h2 id="logoH">Channel Logo</h2>
-              <p class="sub">ကိုယ့် channel logo ကို ဗီဒီယိုပေါ် တင်ထားနိုင်ပါတယ် — preview ပေါ်မှာ လက်နဲ့ ဆွဲရွှေ့ပြီး ကြိုက်တဲ့နေရာ ထားနိုင်ပြီး၊ export ဗီဒီယိုနဲ့ Short မှာပါ အဲဒီနေရာ/အရွယ် အတိုင်း မြှုပ်ပါမည်။ Short preview (9:16) ပေါ်မှာလည်း logo ကို ဆွဲရွှေ့နိုင်ပါတယ်။</p>
+              <p class="sub">ကိုယ့် channel logo ကို ဗီဒီယိုပေါ် တင်ထားနိုင်ပါတယ် — preview ပေါ်မှာ လက်နဲ့ ဆွဲရွှေ့ပြီး ကြိုက်တဲ့နေရာ ထားနိုင်ပြီး၊ export ဗီဒီယိုနဲ့ Short မှာပါ အဲဒီနေရာ/အရွယ် အတိုင်း မြှုပ်ပါမည်။ Short preview ပေါ်မှာလည်း logo ကို ဆွဲရွှေ့နိုင်ပါတယ်။</p>
               <div class="style-grid">
                 <div>
                   <label class="flabel">Logo ပုံ</label>
@@ -515,10 +516,19 @@
             </section>
 
             <section class="card" id="shortCard" aria-labelledby="shortH">
-              <h2 id="shortH">Short ဗီဒီယို ဖန်တီးရန် (9:16)</h2>
-              <p class="sub">နောက်ခံ (ပုံ/ဗီဒီယို အများဆုံး ၅ ခု၊ အစဉ်လိုက် ဆက်ဖွင့်မည်) + အသံဖိုင် + စာတန်း ပေါင်းပြီး 1080×1920 vertical Short ဗီဒီယို ထုတ်ပေးမည်။ ပုံဆိုရင် ဖြည်းဖြည်းချင်း zoom ဝင်သွားမည် (Ken Burns ပုံစံ)၊ ဗီဒီယို ဆိုရင် လှုပ်ရှားနေတဲ့ နောက်ခံ အဖြစ် ဖွင့်ပေးမည်။ စာတန်း ပုံစံနဲ့ နေရာက အပေါ်က “စာတန်း ပုံစံ” setting အတိုင်း သုံးပါမည် — preview ပေါ်မှာ ဆွဲရွှေ့ထားတဲ့ နေရာ အတိုင်း ပါမည်။</p>
+              <h2 id="shortH">Short ဗီဒီယို ဖန်တီးရန် (9:16 / 16:9)</h2>
+              <p class="sub">နောက်ခံ (ပုံ/ဗီဒီယို အများဆုံး ၅ ခု၊ အစဉ်လိုက် ဆက်ဖွင့်မည်) + အသံဖိုင် + စာတန်း ပေါင်းပြီး <span class="short-dims">1080×1920</span> Short ဗီဒီယို ထုတ်ပေးမည်။ ပုံဆိုရင် ဖြည်းဖြည်းချင်း zoom ဝင်သွားမည် (Ken Burns ပုံစံ)၊ ဗီဒီယို ဆိုရင် လှုပ်ရှားနေတဲ့ နောက်ခံ အဖြစ် ဖွင့်ပေးမည်။ စာတန်း ပုံစံနဲ့ နေရာက အပေါ်က “စာတန်း ပုံစံ” setting အတိုင်း သုံးပါမည် — preview ပေါ်မှာ ဆွဲရွှေ့ထားတဲ့ နေရာ အတိုင်း ပါမည်။</p>
 
-              <label class="flabel">နောက်ခံ (9:16)</label>
+              <div style="margin-top:12px">
+                <label class="flabel" style="margin:0 0 6px">ဗီဒီယို အချိုးအစား</label>
+                <div class="seg" id="shortAspectSeg">
+                  <button type="button" data-aspect="9:16" class="on">9:16 · 1080×1920 (ဒေါင်လိုက်)</button>
+                  <button type="button" data-aspect="16:9">16:9 · 1920×1080 (အလျားလိုက်)</button>
+                </div>
+                <p class="sub" style="margin:6px 0 0">Preview နဲ့ Export အရွယ်အစား နှစ်ခုလုံး ရွေးထားတဲ့ အချိုးအစား အတိုင်း ပြောင်းပါမည်။</p>
+              </div>
+
+              <label class="flabel">နောက်ခံ</label>
               <div class="short-bg-list" id="shortBgList"></div>
               <p class="sub" id="shortBgEmpty" style="margin:0 0 10px">နောက်ခံ မရှိသေးပါ — အောက်က ခလုတ်တွေနဲ့ ပုံ သို့မဟုတ် ဗီဒီယို ထည့်ပါ။</p>
               <label class="flabel" style="margin:0 0 6px">နောက်ခံ ထပ်ထည့်မည် (အများဆုံး ၅ ခု)</label>
@@ -527,7 +537,7 @@
                 <button class="btn small" id="shortAddVideoBtn" type="button">ဗီဒီယို ထည့်မည်</button>
                 <span class="fontfile-name" id="shortBgCount"></span>
               </div>
-              <p class="sub" style="margin:8px 0 0">ပုံ/ဗီဒီယို ဘယ်အချိုးအစား ဖြစ်ဖြစ် ရပါတယ် — 9:16 မဟုတ်ရင် 1080×1920 ထဲ အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။ ဗီဒီယိုထဲက အသံ မပါပါ — အသံဖိုင်ရဲ့ အသံကိုပဲ သုံးပါမည်။ ပုံ တစ်ပုံချင်းစီ ပြသချိန်ကို စက္ကန့်နဲ့ ချိန်နိုင်ပြီး၊ ဗီဒီယိုကတော့ သူ့ မူရင်း အရှည်အတိုင်း ဖွင့်ပါမည်။</p>
+              <p class="sub" style="margin:8px 0 0">ပုံ/ဗီဒီယို ဘယ်အချိုးအစား ဖြစ်ဖြစ် ရပါတယ် — ရွေးထားတဲ့ frame (<span class="short-dims">1080×1920</span>) နဲ့ မကိုက်ရင် အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။ ဗီဒီယိုထဲက အသံ မပါပါ — အသံဖိုင်ရဲ့ အသံကိုပဲ သုံးပါမည်။ ပုံ တစ်ပုံချင်းစီ ပြသချိန်ကို စက္ကန့်နဲ့ ချိန်နိုင်ပြီး၊ ဗီဒီယိုကတော့ သူ့ မူရင်း အရှည်အတိုင်း ဖွင့်ပါမည်။</p>
               <div style="margin-top:12px">
                 <label class="flabel" style="margin:0 0 6px">နောက်ခံ Loop</label>
                 <div class="seg" id="shortLoopSeg">
@@ -657,6 +667,7 @@
         shortSubSource: "editor",  // "editor" | "file"
         shortSrtCues: null,
         shortExporting: false,
+        shortAspect: "9:16",    // "9:16" (1080×1920) | "16:9" (1920×1080)
         /* Channel logo overlay — posX/posY are the % position of the
            logo's center in the frame (same convention as the subtitle
            position), shared by the main preview, the Short preview and
@@ -2239,6 +2250,24 @@
       var SHORT_BG_MAX = 5;
       var shortExportState = null, shortRaf = 0;
       var SHORT_W = 1080, SHORT_H = 1920;
+      /* Aspect ratio choice: 9:16 → 1080×1920 (vertical Short),
+         16:9 → 1920×1080 (landscape). SHORT_W/SHORT_H are read live by
+         every Short export path, so switching updates the preview
+         canvas and the next export together. Ignored mid-export. */
+      function setShortAspect(v){
+        if(state.shortExporting) return;
+        state.shortAspect = (v === "16:9") ? "16:9" : "9:16";
+        var wide = state.shortAspect === "16:9";
+        SHORT_W = wide ? 1920 : 1080;
+        SHORT_H = wide ? 1080 : 1920;
+        shortCanvas.width = wide ? 640 : 360;
+        shortCanvas.height = wide ? 360 : 640;
+        shortCanvas.classList.toggle("wide", wide);
+        document.querySelectorAll(".short-dims").forEach(function(el){
+          el.textContent = SHORT_W + "×" + SHORT_H;
+        });
+        drawShortPreview();
+      }
 
       function setShortProgress(pct){
         var bar = $("shortProgress");
@@ -2566,6 +2595,7 @@
         state.shortBgLoop = (v === "on");
         drawShortPreview();
       });
+      segWire("shortAspectSeg", "aspect", function(v){ setShortAspect(v); });
       $("shortAddImageBtn").addEventListener("click", function(){ $("shortImageInput").click(); });
       $("shortImageInput").addEventListener("change", function(){
         var f = this.files[0]; this.value = "";
@@ -2800,7 +2830,7 @@
             },
             function(info){
               setShortProgress(null);
-              setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (1080×1920 ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
+              setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (" + SHORT_W + "×" + SHORT_H + " ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
               toast("Short အရွယ်အစား မမှန်ပါ");
             });
         }).catch(function(){
@@ -2877,7 +2907,7 @@
               },
               function(info){
                 setShortProgress(null);
-                setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (1080×1920 ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
+                setShortStatus("Short ဗီဒီယို အရွယ်အစား မမှန်ပါ — " + Math.round(info.videoWidth) + "×" + Math.round(info.videoHeight) + " ဖြစ်နေပါတယ် (" + SHORT_W + "×" + SHORT_H + " ဖြစ်ရပါမယ်)။ ပြန်စမ်းကြည့်ပါ။", "err");
                 toast("Short အရွယ်အစား မမှန်ပါ");
               });
             return;
