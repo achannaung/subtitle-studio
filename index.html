@@ -277,6 +277,19 @@
         width:min(100%, calc(70vh * 9 / 16));
         margin-inline:auto;
       }
+      /* Main preview frame choice — preview ONLY: export always keeps
+         the source media's own size. "orig" adds no class, so the
+         stage wraps the media exactly as before (audio mode keeps its
+         own 9:16 frame). In a fixed frame the video letterboxes
+         (object-fit:contain) and the subtitle/logo overlays, which are
+         %-positioned inside the stage, follow the frame. */
+      .stage.pv916{aspect-ratio:9/16;width:min(100%, calc(68vh * 9 / 16));margin-inline:auto}
+      .stage.pv169{aspect-ratio:16/9;width:100%;margin-inline:auto}
+      .stage.pv916 video,.stage.pv169 video{
+        position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:contain;
+      }
+      .pv-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .pv-row .flabel{margin:0}
       #audioStage{position:absolute;inset:0}
       #waveCanvas{position:absolute;inset:0;width:100%;height:100%}
       #wavePlayhead{position:absolute;top:0;bottom:0;left:0;width:2px;background:var(--accent);opacity:.9;z-index:2}
@@ -325,6 +338,57 @@
       .short-transport input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
       .short-transport .time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
       #shortCard{scroll-margin-top:14px}
+      /* ---------- project save / tools / presets / safe zones ---------- */
+      .restore-banner{
+        margin-top:16px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;
+        padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+      }
+      /* author display rules beat the UA [hidden] rule — restore it */
+      .restore-banner[hidden],.cue-wrap[hidden]{display:none}
+      .restore-banner .rb-text{flex:1 1 260px}
+      .restore-banner .rb-text b{display:block;font-size:14.5px;margin-bottom:2px}
+      .restore-banner .rb-text span{color:var(--muted);font-size:13px}
+      .restore-banner .rb-actions{display:flex;gap:8px;flex-wrap:wrap}
+      .project-item{
+        display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;
+        padding:8px 10px;margin-top:8px;background:var(--surface-2);flex-wrap:wrap;
+      }
+      .project-info{flex:1 1 160px;min-width:0}
+      .project-info b{display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .project-info span{font-size:12px;color:var(--muted)}
+      .tool-panel{border-top:1px dashed var(--line);padding-top:10px;margin-bottom:12px}
+      .tool-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+      .tool-row .text-input{flex:1 1 110px;min-width:0}
+      .tool-row .num{flex:0 1 90px}
+      .cue.cps-warn{border-color:var(--err)}
+      .cps-badge{
+        font-size:11px;font-weight:700;color:var(--err);border:1px solid var(--err);
+        border-radius:999px;padding:1px 7px;white-space:nowrap;flex:none;
+      }
+      .cue-wrap{flex:none}
+      .cps-summary{color:var(--err);font-size:12.5px;margin:0 0 10px;font-weight:600}
+      .preset-row{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}
+      .preset-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+      .preset-chip{
+        display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;
+        background:var(--surface-2);overflow:hidden;
+      }
+      .preset-apply{border:0;background:transparent;padding:5px 6px 5px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
+      .preset-apply:hover{color:var(--accent-strong)}
+      .preset-del{border:0;background:transparent;padding:5px 10px 5px 2px;cursor:pointer;font-size:15px;color:var(--muted);line-height:1}
+      .preset-del:hover{color:var(--err)}
+      .safe-zone{position:absolute;inset:0;z-index:2;pointer-events:none}
+      .sz{position:absolute;background:rgba(255,70,60,.13);border:1.5px dashed rgba(255,70,60,.55)}
+      .sz-top{left:0;right:0;top:0;height:9%;border-left:0;border-right:0;border-top:0}
+      .sz-right{right:0;top:16%;bottom:26%;width:13%;border-right:0;border-top:0;border-bottom:0}
+      .sz-bottom{left:0;right:0;bottom:0;height:24%;border-left:0;border-right:0;border-bottom:0}
+      .sz-label{position:absolute;font-size:11px;font-weight:700;color:#ff9d94;text-shadow:0 1px 3px rgba(0,0,0,.75);white-space:nowrap}
+      .sz-label-right{right:5px;top:19%}
+      .sz-label-bottom{left:0;right:0;bottom:7px;text-align:center}
+      .bg-restore-note{
+        font-size:12.5px;color:var(--accent-strong);background:var(--accent-soft);
+        border:1px solid var(--accent);border-radius:9px;padding:7px 10px;margin:0 0 10px;
+      }
       #toast{
         position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
         background:#22201c;color:#fdfcf9;padding:10px 18px;border-radius:10px;font-size:14px;
@@ -354,6 +418,17 @@
             <button class="btn" id="pickAudioBtn" type="button">အသံဖိုင် ရွေးမည်</button>
           </div>
         </div>
+        <div class="restore-banner" id="restoreBanner" hidden>
+          <div class="rb-text">
+            <b>သိမ်းထားသော Project ရှိပါတယ်</b>
+            <span id="restoreInfo"></span>
+          </div>
+          <div class="rb-actions">
+            <button class="btn small primary" id="restoreBtn" type="button">ပြန်သုံးမည်</button>
+            <button class="btn small danger" id="restoreDiscardBtn" type="button">ဖျက်မည်</button>
+          </div>
+        </div>
+        <p class="sub" id="restoreHint" hidden style="margin-top:10px"></p>
         <div class="steps">
           <div class="step"><span class="n">1</span><b>ဖိုင် တင်</b><span>ဗီဒီယို သို့မဟုတ် အသံဖိုင်ကို ရွေးပါ — အသံဖိုင်ပဲ ဆိုရင်လည်း .srt ထုတ်လို့ရပါတယ်</span></div>
           <div class="step"><span class="n">2</span><b>AI စာသား ထုတ်</b><span>Gemini က အသံကို စာတန်း အပိုင်းလိုက် အလိုအလျောက် ခွဲပေးမည် — ပြီးရင် ကြိုက်သလို ပြင်နိုင်သည်</span></div>
@@ -372,6 +447,20 @@
       <section id="studio" hidden>
         <div class="studio-grid">
           <div class="col-main">
+            <div class="pv-row">
+              <span class="flabel">Preview အချိုးအစား</span>
+              <div class="seg" id="pvAspectSeg">
+                <button type="button" data-pv="orig" class="on">မူရင်း</button>
+                <button type="button" data-pv="9:16">9:16 · ဒေါင်လိုက်</button>
+                <button type="button" data-pv="16:9">16:9 · အလျားလိုက်</button>
+              </div>
+              <span class="sub" style="margin:0">Preview မှာပဲ ပြောင်းပါမည် — Export က မူရင်း အရွယ်အစား အတိုင်း ထွက်ပါမည်။</span>
+              <span class="flabel">Shorts Safe Zone</span>
+              <div class="seg" id="safeSeg">
+                <button type="button" data-safe="off" class="on">ပိတ်</button>
+                <button type="button" data-safe="on">ဖွင့်</button>
+              </div>
+            </div>
             <div class="stage" id="stage">
               <video id="video" playsinline preload="metadata"></video>
               <div id="audioStage" hidden>
@@ -384,6 +473,13 @@
               </div>
               <div class="sub-overlay" id="overlay"><span id="overlayText" title="ဆွဲရွှေ့နိုင်ပါတယ်"></span></div>
               <img id="logoOverlay" class="logo-overlay" alt="Channel Logo" draggable="false" style="display:none" />
+              <div id="safeZone" class="safe-zone" hidden aria-hidden="true">
+                <div class="sz sz-top"></div>
+                <div class="sz sz-right"></div>
+                <div class="sz sz-bottom"></div>
+                <span class="sz-label sz-label-right">ခလုတ်များ</span>
+                <span class="sz-label sz-label-bottom">Caption / ခေါင်းစဉ် နေရာ — စာတန်း မထားပါနဲ့</span>
+              </div>
               <div class="render-badge" id="renderBadge"><span class="dot"></span>Render လုပ်နေသည်…</div>
               <canvas id="renderCanvas" width="320" height="180" hidden></canvas>
             </div>
@@ -462,6 +558,15 @@
                   </div>
                 </div>
               </div>
+              <div class="preset-row">
+                <label class="flabel" style="margin:0 0 6px">Style Preset — ပုံစံ အစုံလိုက် သိမ်း / ပြန်သုံး</label>
+                <p class="sub" style="margin:0 0 8px">ဖောင့်၊ အရွယ်အစား၊ အရောင်၊ နောက်ခံ အကွက်၊ စာတန်း နေရာ နဲ့ Logo setting (အရွယ် / မြင်သာမှု / နေရာ) အစုံလိုက်ကို နာမည်ပေးပြီး သိမ်းထားနိုင်ပါတယ် — နောက် video မှာ တစ်ချက်နှိပ်ရုံနဲ့ ပြန်သုံးနိုင်ပါတယ်။ Preset တွေက ဒီ browser ထဲမှာပဲ သိမ်းထားပါတယ် (Logo ပုံ ကိုယ်တိုင်တော့ မပါပါ)။</p>
+                <div class="tool-row" style="margin-bottom:0">
+                  <input class="text-input" id="presetName" type="text" placeholder="Preset အမည် — ဥပမာ: တရား ပုံမှန်" />
+                  <button class="btn small" id="presetSaveBtn" type="button">လက်ရှိ ပုံစံကို Preset သိမ်းမည်</button>
+                </div>
+                <div class="preset-list" id="presetList"></div>
+              </div>
             </section>
 
             <section class="card" aria-labelledby="logoH">
@@ -517,7 +622,7 @@
 
             <section class="card" id="shortCard" aria-labelledby="shortH">
               <h2 id="shortH">Short ဗီဒီယို ဖန်တီးရန် (9:16 / 16:9)</h2>
-              <p class="sub">နောက်ခံ (ပုံ/ဗီဒီယို အများဆုံး ၅ ခု၊ အစဉ်လိုက် ဆက်ဖွင့်မည်) + အသံဖိုင် + စာတန်း ပေါင်းပြီး <span class="short-dims">1080×1920</span> Short ဗီဒီယို ထုတ်ပေးမည်။ ပုံဆိုရင် ဖြည်းဖြည်းချင်း zoom ဝင်သွားမည် (Ken Burns ပုံစံ)၊ ဗီဒီယို ဆိုရင် လှုပ်ရှားနေတဲ့ နောက်ခံ အဖြစ် ဖွင့်ပေးမည်။ စာတန်း ပုံစံနဲ့ နေရာက အပေါ်က “စာတန်း ပုံစံ” setting အတိုင်း သုံးပါမည် — preview ပေါ်မှာ ဆွဲရွှေ့ထားတဲ့ နေရာ အတိုင်း ပါမည်။</p>
+              <p class="sub">နောက်ခံ (ပုံ/ဗီဒီယို အရေအတွက် အကန့်အသတ် မရှိ၊ အစဉ်လိုက် ဆက်ဖွင့်မည်) + အသံဖိုင် + စာတန်း ပေါင်းပြီး <span class="short-dims">1080×1920</span> Short ဗီဒီယို ထုတ်ပေးမည်။ ပုံဆိုရင် ဖြည်းဖြည်းချင်း zoom ဝင်သွားမည် (Ken Burns ပုံစံ)၊ ဗီဒီယို ဆိုရင် လှုပ်ရှားနေတဲ့ နောက်ခံ အဖြစ် ဖွင့်ပေးမည်။ စာတန်း ပုံစံနဲ့ နေရာက အပေါ်က “စာတန်း ပုံစံ” setting အတိုင်း သုံးပါမည် — preview ပေါ်မှာ ဆွဲရွှေ့ထားတဲ့ နေရာ အတိုင်း ပါမည်။</p>
 
               <div style="margin-top:12px">
                 <label class="flabel" style="margin:0 0 6px">ဗီဒီယို အချိုးအစား</label>
@@ -528,10 +633,20 @@
                 <p class="sub" style="margin:6px 0 0">Preview နဲ့ Export အရွယ်အစား နှစ်ခုလုံး ရွေးထားတဲ့ အချိုးအစား အတိုင်း ပြောင်းပါမည်။</p>
               </div>
 
+              <div style="margin-top:12px">
+                <label class="flabel" style="margin:0 0 6px">Shorts Safe Zone (Preview မှာပဲ ပြပါမည်)</label>
+                <div class="seg" id="shortSafeSeg">
+                  <button type="button" data-ssafe="off" class="on">ပိတ်</button>
+                  <button type="button" data-ssafe="on">ဖွင့်</button>
+                </div>
+                <p class="sub" style="margin:6px 0 0">9:16 preview ပေါ်မှာ YouTube Shorts / Reels ရဲ့ ဘေးခလုတ်တွေနဲ့ အောက် caption နေရာတွေ ဖုံးတတ်တဲ့ နေရာတွေကို အနီအရိပ် နဲ့ ပြပေးပါမည် — စာတန်းကို အဲဒီ နေရာတွေ မထားမိအောင် ကြည့်ပြီး ညှိနိုင်ပါတယ်။ Export ထဲ မပါပါ။</p>
+              </div>
+
               <label class="flabel">နောက်ခံ</label>
               <div class="short-bg-list" id="shortBgList"></div>
               <p class="sub" id="shortBgEmpty" style="margin:0 0 10px">နောက်ခံ မရှိသေးပါ — အောက်က ခလုတ်တွေနဲ့ ပုံ သို့မဟုတ် ဗီဒီယို ထည့်ပါ။</p>
-              <label class="flabel" style="margin:0 0 6px">နောက်ခံ ထပ်ထည့်မည် (အများဆုံး ၅ ခု)</label>
+              <p class="bg-restore-note" id="shortBgRestoreNote" hidden></p>
+              <label class="flabel" style="margin:0 0 6px">နောက်ခံ ထပ်ထည့်မည် (ပုံ/ဗီဒီယို အများအပြား တစ်ခါတည်း ရွေးထည့်နိုင်သည်)</label>
               <div class="fontfile-row" style="margin-top:0">
                 <button class="btn small" id="shortAddImageBtn" type="button">ပုံ ထည့်မည်</button>
                 <button class="btn small" id="shortAddVideoBtn" type="button">ဗီဒီယို ထည့်မည်</button>
@@ -591,6 +706,16 @@
           </div>
 
           <div class="col-side">
+            <section class="card" aria-labelledby="projH">
+              <h2 id="projH">Project သိမ်း / ပြန်ဖွင့်</h2>
+              <p class="sub" id="autosaveLine">Autosave — page ပိတ်မိတာ၊ refresh ဖြစ်သွားတာနဲ့ လုပ်ထားသမျှ မပျောက်အောင် cue တွေ၊ ပုံစံ၊ Short setting တွေကို ဒီ browser ထဲမှာ အလိုအလျောက် သိမ်းပေးနေပါတယ် (မီဒီယာ ဖိုင် ကိုယ်တိုင်တော့ ပြန်ရွေးပေးရပါမည်)။</p>
+              <div class="tool-row" style="margin-bottom:0">
+                <input class="text-input" id="projectName" type="text" placeholder="Project အမည် — ဥပမာ: တရား အပိုင်း ၁" />
+                <button class="btn small" id="projectSaveBtn" type="button">နာမည်နဲ့ သိမ်းမည်</button>
+              </div>
+              <div id="projectList"></div>
+            </section>
+
             <section class="card" aria-labelledby="aiH">
               <h2 id="aiH">AI အလိုအလျောက် စာသားထုတ်</h2>
               <p class="sub">ဖိုင်ထဲက အသံကို Google Gemini ဆီ ပို့ပြီး စာတန်း အပိုင်းလိုက် ထုတ်ပေးမည်။</p>
@@ -618,6 +743,26 @@
                 <button class="btn small" id="importSrtBtn" type="button">SRT / TXT ([00:00:00]) တင်မည်</button>
                 <button class="btn small" id="exportSrtBtn" type="button">SRT ထုတ်မည်</button>
               </div>
+              <div class="tool-panel">
+                <label class="flabel" style="margin:0 0 6px">အချိန် အားလုံး ရွှေ့ရန်</label>
+                <div class="tool-row">
+                  <input class="text-input num" id="shiftInput" type="number" step="0.1" min="0" value="0.5" aria-label="ရွှေ့မည့် စက္ကန့်" />
+                  <span class="sub" style="margin:0">စက္ကန့်</span>
+                  <button class="btn small" id="shiftMinusBtn" type="button">− နောက်ဆုတ် ရွှေ့မည်</button>
+                  <button class="btn small" id="shiftPlusBtn" type="button">+ ရှေ့တိုး ရွှေ့မည်</button>
+                </div>
+                <label class="flabel" style="margin:10px 0 6px">စာသား ရှာ / လဲ</label>
+                <div class="tool-row">
+                  <input class="text-input" id="findInput" type="text" placeholder="ရှာမည့် စာသား" />
+                  <input class="text-input" id="replaceInput" type="text" placeholder="အစားထိုးမည့် စာသား" />
+                  <button class="btn small" id="replaceAllBtn" type="button">အားလုံး လဲမည်</button>
+                </div>
+                <p class="sub" id="replaceResult" style="margin:0 0 4px"></p>
+                <div class="tool-row" style="margin-bottom:0">
+                  <button class="btn small" id="wrapAllBtn" type="button">ရှည်လွန်းသော Cue အားလုံး ၂ ကြောင်း ခွဲမည်</button>
+                </div>
+                <p class="cps-summary" id="cpsSummary" hidden></p>
+              </div>
               <div class="cue-list" id="cueList">
                 <div class="cue-empty" id="cueEmpty">စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT သို့မဟုတ် [00:00:00] အချိန်အမှတ်ပါ TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။</div>
               </div>
@@ -630,8 +775,8 @@
       <input type="file" id="audioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
       <input type="file" id="srtInput" accept=".srt,.txt,text/plain" hidden />
       <input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden />
-      <input type="file" id="shortImageInput" accept="image/*" hidden />
-      <input type="file" id="shortVideoInput" accept="video/*,.mp4,.webm,.mov,.m4v" hidden />
+      <input type="file" id="shortImageInput" accept="image/*" multiple hidden />
+      <input type="file" id="shortVideoInput" accept="video/*,.mp4,.webm,.mov,.m4v" multiple hidden />
       <input type="file" id="shortAudioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.flac,.opus" hidden />
       <input type="file" id="shortSrtInput" accept=".srt,.txt,text/plain" hidden />
       <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif" hidden />
@@ -655,10 +800,13 @@
         transcribing: false,
         exporting: false,
         mode: "video",        // "video" | "audio"
+        previewAspect: "orig", // main stage preview frame: "orig" | "9:16" | "16:9" — preview only, export keeps the source size
+        safeMain: false,       // Shorts safe-zone shading on the main stage (9:16 frame only, preview only)
+        safeShort: false,      // Shorts safe-zone shading on the Short canvas preview (preview only, never exported)
         pendingShort: false,  // landing Short CTA: scroll to the maker after audio loads
         audioPeaks: null,
-        /* Short maker background sequence (max 5, photos and videos
-           mixed, played back-to-back in list order):
+        /* Short maker background sequence (no count limit, photos and
+           videos mixed, played back-to-back in list order):
            { kind:"image", name, url, img, photoDur } |
            { kind:"video", name, url, videoEl, videoDur } */
         shortBgItems: [],
@@ -775,6 +923,19 @@
         video.load();
         window.scrollTo({ top: 0, behavior: "smooth" });
         if(isAudio) setTimeout(drawWaveform, 80);
+        /* Project restore: once a media file is (re)picked, arm the
+           autosave and apply any project the user chose to restore —
+           cues, style and settings come back; only the media file
+           itself has to be picked again by hand. */
+        autosaveArmed = true;
+        if(pendingRestore){
+          var snap = pendingRestore; pendingRestore = null;
+          var hint = $("restoreHint"); if(hint) hint.hidden = true;
+          applyProject(snap);
+          if(snap.mediaName && snap.mediaName !== file.name) toast("ရွေးလိုက်တဲ့ ဖိုင် အမည် မတူပါ — ဒါပေမယ့် Project (cue + ပုံစံ) ကို ပြန်ထည့်ပေးထားပါတယ်");
+          else toast("Project ပြန်ဖွင့်ပြီးပါပြီ — စာတန်း " + state.cues.length + " ပိုင်း");
+          scheduleAutosave();
+        }
       }
       function computePeaks(buf, n){
         var ch = buf.getChannelData(0), len = ch.length, size = Math.max(1, Math.floor(len / n)), peaks = [];
@@ -878,6 +1039,8 @@
           empty.className = "cue-empty";
           empty.textContent = "စာတန်း မရှိသေးပါ။ AI နဲ့ ထုတ်ပါ၊ SRT သို့မဟုတ် [00:00:00] အချိန်အမှတ်ပါ TXT တင်ပါ၊ သို့မဟုတ် Cue အသစ် ထည့်ပါ။";
           cueList.appendChild(empty);
+          updateCpsSummary();
+          scheduleAutosave();
           return;
         }
         state.cues.forEach(function(c, i){
@@ -892,12 +1055,17 @@
               '<input class="cue-time" data-field="end" value="' + c.end.toFixed(1) + '" inputmode="decimal" aria-label="ဆုံးချိန် (စက္ကန့်)" />' +
               '<button class="mini-btn cue-seek" type="button" title="ဒီနေရာက ဖွင့်မည်" aria-label="Seek"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>' +
               '<button class="mini-btn cue-del" type="button" title="ဖျက်မည်" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2m-8 0l1 13h8l1-13"/></svg></button>' +
+              '<span class="cps-badge" hidden></span>' +
+              '<button class="btn small cue-wrap" type="button" title="ဒီ cue ကို စာကြောင်း ၂ ကြောင်း ခွဲမည်" hidden>၂ ကြောင်း ခွဲ</button>' +
             '</div>' +
             '<textarea class="cue-text" rows="2" placeholder="စာတန်း စာသား…" aria-label="စာတန်း စာသား">' + esc(c.text) + '</textarea>';
+          refreshCueMeta(row, c);
           cueList.appendChild(row);
         });
+        updateCpsSummary();
         updateShortSubInfo();
         if(state.shortBgItems.length) drawShortPreview();
+        scheduleAutosave();
       }
       function updateActiveCue(){
         var c = cueAt(video.currentTime);
@@ -928,6 +1096,9 @@
         var c = state.cues.find(function(x){ return x.id === Number(row.dataset.id); }); if(!c) return;
         if(e.target.classList.contains("cue-text")){
           c.text = e.target.value;
+          refreshCueMeta(row, c);
+          updateCpsSummary();
+          scheduleAutosave();
           if(c.id === state.activeCueId) updateOverlay();
         }
       });
@@ -945,6 +1116,11 @@
         var row = e.target.closest(".cue"); if(!row) return;
         var c = state.cues.find(function(x){ return x.id === Number(row.dataset.id); }); if(!c) return;
         if(e.target.closest(".cue-seek")){ video.currentTime = c.start; video.play(); }
+        if(e.target.closest(".cue-wrap")){
+          var wrapped = splitWrapText(c.text);
+          if(wrapped){ c.text = wrapped; renderCues(); updateOverlay(); toast("စာကြောင်း ၂ ကြောင်း ခွဲပြီးပါပြီ"); }
+          return;
+        }
         if(e.target.closest(".cue-del")){
           state.cues = state.cues.filter(function(x){ return x.id !== c.id; });
           renderCues(); updateOverlay();
@@ -1053,6 +1229,7 @@
         var h = stage.clientHeight || video.clientHeight || 300;
         overlayText.style.fontSize = Math.max(11, h * st.size / 100) + "px";
         if(state.shortBgItems.length) drawShortPreview();
+        scheduleAutosave();
       }
       window.addEventListener("resize", function(){ applyStyle(); drawWaveform(); });
       video.addEventListener("loadedmetadata", applyStyle);
@@ -1082,6 +1259,18 @@
       }
       segWire("posSeg", "pos", function(v){ setPosition(v); });
       segWire("bgSeg", "bg", function(v){ state.style.bg = (v === "on"); applyStyle(); });
+      /* Main preview frame aspect — preview only. The stage gets a
+         fixed 9:16 / 16:9 frame and the media letterboxes inside it;
+         the export renderers never read this, so exported files keep
+         the source video's original dimensions. */
+      segWire("pvAspectSeg", "pv", function(v){
+        state.previewAspect = (v === "9:16" || v === "16:9") ? v : "orig";
+        stage.classList.toggle("pv916", state.previewAspect === "9:16");
+        stage.classList.toggle("pv169", state.previewAspect === "16:9");
+        applyStyle();
+        updateSafeZone();
+        if(state.mode === "audio") setTimeout(drawWaveform, 60);
+      });
 
       /* ---------- subtitle position: presets, reset, drag ----------
          posX / posY are the % position of the subtitle block's center
@@ -2247,7 +2436,6 @@
          verified to be exactly 1080×1920. */
       var shortPlayer = $("shortPlayer"), shortCanvas = $("shortCanvas"),
           shortCtx = shortCanvas.getContext("2d"), shortSeek = $("shortSeek");
-      var SHORT_BG_MAX = 5;
       var shortExportState = null, shortRaf = 0;
       var SHORT_W = 1080, SHORT_H = 1920;
       /* Aspect ratio choice: 9:16 → 1080×1920 (vertical Short),
@@ -2488,17 +2676,10 @@
         });
         $("shortBgEmpty").hidden = state.shortBgItems.length > 0;
         $("shortBgCount").textContent = state.shortBgItems.length
-          ? "နောက်ခံ " + state.shortBgItems.length + " / " + SHORT_BG_MAX + " ခု"
+          ? "နောက်ခံ " + state.shortBgItems.length + " ခု"
           : "";
-        var full = state.shortBgItems.length >= SHORT_BG_MAX;
-        $("shortAddImageBtn").disabled = full;
-        $("shortAddVideoBtn").disabled = full;
       }
       function addShortBgImage(file){
-        if(state.shortBgItems.length >= SHORT_BG_MAX){
-          toast("နောက်ခံ အများဆုံး ၅ ခု ပဲ ထည့်လို့ရပါတယ်");
-          return;
-        }
         var url = URL.createObjectURL(file);
         var img = new Image();
         img.onload = function(){
@@ -2511,10 +2692,6 @@
         img.src = url;
       }
       function addShortBgVideo(file){
-        if(state.shortBgItems.length >= SHORT_BG_MAX){
-          toast("နောက်ခံ အများဆုံး ၅ ခု ပဲ ထည့်လို့ရပါတယ်");
-          return;
-        }
         var url = URL.createObjectURL(file);
         var v = document.createElement("video");
         v.muted = true;
@@ -2545,7 +2722,7 @@
       }
 
       /* ----- frame drawing (shared by preview + both export paths) ----- */
-      function drawShortFrame(g, W, H, t, cues){
+      function drawShortFrame(g, W, H, t, cues, preview){
         g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
         var sel = shortBgAt(t);
         var drawn = false;
@@ -2584,10 +2761,14 @@
           g.fillText("နောက်ခံ တင်ပါ", W / 2, H / 2);
         }
         drawSubtitlesAt(g, W, H, t, cues);
+        /* Safe-zone shading is a preview aid only — the export render
+           loop calls this without the preview flag, so the shading can
+           never be burned into an exported Short. */
+        if(preview && state.safeShort && state.shortAspect === "9:16") drawSafeZonesCanvas(g, W, H);
       }
       function drawShortPreview(){
         syncShortBgVideos();
-        drawShortFrame(shortCtx, shortCanvas.width, shortCanvas.height, shortPlayer.currentTime || 0, shortCues());
+        drawShortFrame(shortCtx, shortCanvas.width, shortCanvas.height, shortPlayer.currentTime || 0, shortCues(), true);
       }
 
       /* ----- inputs: background sequence / loop / audio / subtitle source ----- */
@@ -2598,13 +2779,13 @@
       segWire("shortAspectSeg", "aspect", function(v){ setShortAspect(v); });
       $("shortAddImageBtn").addEventListener("click", function(){ $("shortImageInput").click(); });
       $("shortImageInput").addEventListener("change", function(){
-        var f = this.files[0]; this.value = "";
-        if(f) addShortBgImage(f);
+        var files = Array.prototype.slice.call(this.files || []); this.value = "";
+        files.forEach(function(f){ addShortBgImage(f); });
       });
       $("shortAddVideoBtn").addEventListener("click", function(){ $("shortVideoInput").click(); });
       $("shortVideoInput").addEventListener("change", function(){
-        var f = this.files[0]; this.value = "";
-        if(f) addShortBgVideo(f);
+        var files = Array.prototype.slice.call(this.files || []); this.value = "";
+        files.forEach(function(f){ addShortBgVideo(f); });
       });
       renderShortBgList();
       function setShortAudio(file){
@@ -3222,6 +3403,431 @@
         shortCanvas.addEventListener(ev, function(e){ if(e.pointerId === shortLogoDragId) shortLogoDragId = null; });
       });
       applyLogo();
+
+      /* ================= persistence (this browser only) =================
+         Project save/restore and reusable style presets were explicitly
+         requested, so they live in localStorage. The Gemini API key is
+         NEVER stored — it stays in its input field for the current tab
+         only, exactly as before. Every read/write is wrapped so a full
+         or blocked store degrades to "feature unavailable" instead of
+         breaking the editor. Media files and the logo image cannot be
+         stored (browser file handles don't persist) — a restore brings
+         back cues, style and settings, and asks for the file again. */
+      var LS_OK = (function(){
+        try { var k = "__ss_probe__"; localStorage.setItem(k, "1"); localStorage.removeItem(k); return true; }
+        catch(e){ return false; }
+      })();
+      function lsGet(key){
+        if(!LS_OK) return null;
+        try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e){ return null; }
+      }
+      function lsSet(key, val){
+        if(!LS_OK) return false;
+        try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch(e){ return false; }
+      }
+      function lsDel(key){ try { localStorage.removeItem(key); } catch(e){} }
+      function fmtSavedAt(ts){
+        try { return new Date(ts).toLocaleString("my-MM", { dateStyle: "medium", timeStyle: "short" }); }
+        catch(e){ try { return new Date(ts).toLocaleString(); } catch(e2){ return ""; } }
+      }
+      function markSeg(id, attr, value){
+        var seg = $(id); if(!seg) return;
+        seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset[attr] === value); });
+      }
+
+      /* ---------- project snapshot / autosave / restore ---------- */
+      function snapshotProject(){
+        return {
+          v: 1,
+          savedAt: Date.now(),
+          mediaName: state.videoFile ? state.videoFile.name : "",
+          mediaType: state.videoFile ? (state.videoFile.type || "") : "",
+          mode: state.mode,
+          cues: state.cues.map(function(c){ return { start: c.start, end: c.end, text: c.text }; }),
+          style: { font: state.style.font, size: state.style.size, color: state.style.color, bg: state.style.bg, pos: state.style.pos, posX: state.style.posX, posY: state.style.posY },
+          logo: { enabled: state.logo.enabled, size: state.logo.size, opacity: state.logo.opacity, posX: state.logo.posX, posY: state.logo.posY, name: state.logo.name || "" },
+          shortBg: state.shortBgItems.map(function(it){ return { kind: it.kind, name: it.name, photoDur: it.photoDur || null }; }),
+          shortBgLoop: state.shortBgLoop,
+          shortSubSource: state.shortSubSource,
+          shortAspect: state.shortAspect,
+          previewAspect: state.previewAspect
+        };
+      }
+      var autosaveArmed = false, autosaveTimer = null, pendingRestore = null;
+      function scheduleAutosave(){
+        if(!autosaveArmed || !LS_OK) return;
+        if(autosaveTimer) clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(saveAutosave, 800);
+      }
+      function saveAutosave(){
+        autosaveTimer = null;
+        if(!autosaveArmed) return;
+        var snap = snapshotProject();
+        if(lsSet("ss.autosave", snap)) updateAutosaveLine(snap);
+      }
+      function updateAutosaveLine(snap){
+        var el = $("autosaveLine"); if(!el || !snap) return;
+        el.textContent = "နောက်ဆုံး Autosave — " + fmtSavedAt(snap.savedAt) + " · စာတန်း " + (snap.cues ? snap.cues.length : 0) + " ပိုင်း · ဖိုင်: " + (snap.mediaName || "—") + " (ဒီ browser ထဲမှာပဲ သိမ်းထားပါတယ်)";
+      }
+      function syncStyleControls(){
+        var st = state.style, fs = $("fontSelect");
+        if(fs){
+          var has = false;
+          fs.querySelectorAll("option").forEach(function(o){ if(o.value === st.font) has = true; });
+          if(has) fs.value = st.font;
+        }
+        sizeRange.value = st.size;
+        $("sizeVal").textContent = st.size;
+        colorInput.value = st.color;
+        markPosSeg(st.pos === "top" || st.pos === "middle" || st.pos === "bottom" ? st.pos : null);
+        markSeg("bgSeg", "bg", st.bg ? "on" : "off");
+        $("logoSizeRange").value = state.logo.size;
+        $("logoSizeVal").textContent = state.logo.size;
+        $("logoOpacityRange").value = state.logo.opacity;
+        $("logoOpacityVal").textContent = state.logo.opacity;
+        markLogoShow(state.logo.enabled && !!state.logo.img);
+        markLogoSeg(null);
+      }
+      function applyProject(snap){
+        if(!snap) return;
+        if(Array.isArray(snap.cues)){
+          state.cues = snap.cues.map(function(c){
+            var s = Number(c.start) || 0;
+            return newCue(s, Number(c.end) > s ? Number(c.end) : s + 2, String(c.text == null ? "" : c.text));
+          });
+        }
+        if(snap.style || snap.logo) applyStylePreset({ style: snap.style, logo: snap.logo });
+        state.shortBgLoop = snap.shortBgLoop !== false;
+        markSeg("shortLoopSeg", "loop", state.shortBgLoop ? "on" : "off");
+        if(snap.shortSubSource === "file" || snap.shortSubSource === "editor"){
+          state.shortSubSource = snap.shortSubSource;
+          markSeg("shortSubSeg", "src", state.shortSubSource);
+          $("shortSrtBtn").hidden = state.shortSubSource !== "file";
+        }
+        setShortAspect(snap.shortAspect === "16:9" ? "16:9" : "9:16");
+        markSeg("shortAspectSeg", "aspect", state.shortAspect);
+        state.previewAspect = (snap.previewAspect === "9:16" || snap.previewAspect === "16:9") ? snap.previewAspect : "orig";
+        stage.classList.toggle("pv916", state.previewAspect === "9:16");
+        stage.classList.toggle("pv169", state.previewAspect === "16:9");
+        markSeg("pvAspectSeg", "pv", state.previewAspect);
+        updateSafeZone();
+        renderCues(); updateOverlay();
+        updateShortSubInfo();
+        /* Background files themselves can't come back — list their names
+           so the same files can be re-added in the same order. */
+        var note = $("shortBgRestoreNote");
+        if(note){
+          if(snap.shortBg && snap.shortBg.length && !state.shortBgItems.length){
+            note.hidden = false;
+            note.textContent = "သိမ်းထားသော Project ထဲက နောက်ခံတွေ — ဖိုင် ပြန်ထည့်ပေးရန် လိုပါတယ် (အစဉ်လိုက်): " + snap.shortBg.map(function(b, i){ return (i + 1) + ". " + b.name; }).join(" · ");
+          } else note.hidden = true;
+        }
+      }
+      function showRestoreHint(snap){
+        var hint = $("restoreHint");
+        if(!hint || !snap) return;
+        hint.hidden = false;
+        hint.textContent = "ပြန်သုံးရန် စောင့်နေသော Project — “" + (snap.mediaName || "မီဒီယာ") + "” ဖိုင်ကို အပေါ်မှာ ပြန်ရွေးပေးပါ။ ရွေးပြီးတာနဲ့ စာတန်း " + (snap.cues ? snap.cues.length : 0) + " ပိုင်းနဲ့ ပုံစံတွေ အလိုအလျောက် ပြန်ဝင်ပါမည်။";
+      }
+
+      /* ---------- named projects ---------- */
+      function getProjects(){ var p = lsGet("ss.projects"); return Array.isArray(p) ? p : []; }
+      function renderProjectList(){
+        var list = $("projectList"); if(!list) return;
+        var projects = getProjects();
+        list.innerHTML = "";
+        if(!projects.length){
+          var d = document.createElement("div");
+          d.className = "fontfile-name";
+          d.style.marginTop = "8px";
+          d.textContent = LS_OK ? "နာမည်နဲ့ သိမ်းထားသော Project မရှိသေးပါ" : "ဒီ browser မှာ localStorage သုံးလို့ မရလို့ Project သိမ်းလို့ မရပါ";
+          list.appendChild(d);
+          return;
+        }
+        projects.forEach(function(p, idx){
+          var row = document.createElement("div");
+          row.className = "project-item";
+          var info = document.createElement("div");
+          info.className = "project-info";
+          var data = p.data || {};
+          info.innerHTML = "<b>" + esc(p.name) + "</b><span>" + esc(fmtSavedAt(p.savedAt)) + " · စာတန်း " + (data.cues ? data.cues.length : 0) + " ပိုင်း · " + esc(data.mediaName || "") + "</span>";
+          var load = document.createElement("button");
+          load.className = "btn small"; load.type = "button"; load.textContent = "ပြန်ဖွင့်မည်";
+          load.addEventListener("click", function(){ loadProject(idx); });
+          var del = document.createElement("button");
+          del.className = "btn small danger"; del.type = "button"; del.textContent = "ဖျက်မည်";
+          del.addEventListener("click", function(){
+            var arr = getProjects(); arr.splice(idx, 1); lsSet("ss.projects", arr); renderProjectList();
+            toast("Project ဖျက်ပြီးပါပြီ");
+          });
+          row.appendChild(info); row.appendChild(load); row.appendChild(del);
+          list.appendChild(row);
+        });
+      }
+      function loadProject(idx){
+        var p = getProjects()[idx]; if(!p || !p.data) return;
+        if(state.videoFile){
+          applyProject(p.data);
+          scheduleAutosave();
+          toast("Project “" + p.name + "” ပြန်ဖွင့်ပြီးပါပြီ");
+        } else {
+          pendingRestore = p.data;
+          showRestoreHint(p.data);
+          toast("Project ပြန်သုံးရန် မူရင်း မီဒီယာ ဖိုင်ကို အရင် ရွေးပေးပါ");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+      $("projectSaveBtn").addEventListener("click", function(){
+        var name = $("projectName").value.trim();
+        if(!name){ toast("Project အမည် အရင် ရိုက်ပါ"); $("projectName").focus(); return; }
+        if(!LS_OK){ toast("ဒီ browser မှာ သိမ်းလို့ မရပါ (localStorage ပိတ်ထားပါတယ်)"); return; }
+        var arr = getProjects().filter(function(p){ return p.name !== name; });
+        arr.unshift({ name: name, savedAt: Date.now(), data: snapshotProject() });
+        if(lsSet("ss.projects", arr.slice(0, 20))){
+          $("projectName").value = "";
+          renderProjectList();
+          toast("Project “" + name + "” သိမ်းပြီးပါပြီ");
+        } else toast("သိမ်းလို့ မရပါ — browser storage ပြည့်နေတာ ဖြစ်နိုင်ပါတယ်");
+      });
+      $("restoreBtn").addEventListener("click", function(){
+        var snap = lsGet("ss.autosave"); if(!snap) return;
+        pendingRestore = snap;
+        $("restoreBanner").hidden = true;
+        showRestoreHint(snap);
+        toast("မူရင်း မီဒီယာ ဖိုင်ကို ပြန်ရွေးပေးပါ — cue တွေ အလိုအလျောက် ပြန်ဝင်ပါမည်");
+      });
+      $("restoreDiscardBtn").addEventListener("click", function(){
+        lsDel("ss.autosave");
+        $("restoreBanner").hidden = true;
+        toast("သိမ်းထားသော Project ကို ဖျက်ပြီးပါပြီ");
+      });
+
+      /* ---------- cue tools: timing shift + find & replace ---------- */
+      function shiftAllCues(delta){
+        if(!state.cues.length){ toast("ရွှေ့စရာ စာတန်း မရှိသေးပါ"); return; }
+        state.cues.forEach(function(c){
+          c.start = Math.max(0, Math.round((c.start + delta) * 100) / 100);
+          c.end = Math.max(0, Math.round((c.end + delta) * 100) / 100);
+          if(c.end <= c.start) c.end = c.start + 0.5;
+        });
+        renderCues(); updateOverlay();
+        toast("စာတန်း အားလုံးကို " + (delta > 0 ? "+" : "−") + Math.abs(delta) + " စက္ကန့် ရွှေ့ပြီးပါပြီ");
+      }
+      function readShiftAmount(){
+        var v = Number($("shiftInput").value);
+        if(!isFinite(v) || v === 0){ toast("ရွှေ့မည့် စက္ကန့် ပမာဏ ရိုက်ပါ"); return null; }
+        return Math.abs(v);
+      }
+      $("shiftPlusBtn").addEventListener("click", function(){ var v = readShiftAmount(); if(v != null) shiftAllCues(v); });
+      $("shiftMinusBtn").addEventListener("click", function(){ var v = readShiftAmount(); if(v != null) shiftAllCues(-v); });
+      $("replaceAllBtn").addEventListener("click", function(){
+        var find = $("findInput").value, rep = $("replaceInput").value, res = $("replaceResult");
+        if(!find){ if(res) res.textContent = ""; toast("ရှာမည့် စာသား အရင် ရိုက်ပါ"); return; }
+        var cuesChanged = 0, hits = 0;
+        state.cues.forEach(function(c){
+          if(c.text && c.text.indexOf(find) >= 0){
+            var parts = c.text.split(find);
+            hits += parts.length - 1;
+            c.text = parts.join(rep);
+            cuesChanged++;
+          }
+        });
+        if(res) res.textContent = hits ? ("Cue " + cuesChanged + " ခုမှာ နေရာ " + hits + " ခု လဲပြီးပါပြီ") : "ရှာတဲ့ စာသား မတွေ့ပါ";
+        if(hits){ renderCues(); updateOverlay(); }
+      });
+
+      /* ---------- reading speed (CPS) + auto two-line wrap ---------- */
+      var WRAP_LIMIT = 42, CPS_LIMIT = 20;
+      function cueCps(c){
+        var d = c.end - c.start;
+        if(!(d > 0)) return 0;
+        return String(c.text || "").replace(/\s+/g, "").length / d;
+      }
+      function needsWrap(c){
+        var t = String(c.text || "");
+        if(t.indexOf("\n") >= 0) return false;
+        return t.replace(/\s+/g, " ").trim().length > WRAP_LIMIT;
+      }
+      function splitWrapText(text){
+        var t = String(text || "").replace(/\s+/g, " ").trim();
+        if(t.length <= WRAP_LIMIT) return null;
+        var mid = t.length / 2, best = -1, bestScore = Infinity, i;
+        /* prefer a break right after sentence punctuation near the middle */
+        var punct = "။၊.!?;:…";
+        for(i = 0; i < t.length; i++){
+          if(punct.indexOf(t.charAt(i)) >= 0){
+            var cut = i + 1;
+            if(cut < 8 || t.length - cut < 8) continue;
+            var sc = Math.abs(cut - mid);
+            if(sc < bestScore){ bestScore = sc; best = cut; }
+          }
+        }
+        if(best < 0){
+          var parts = t.split(" "), acc = 0;
+          for(i = 0; i < parts.length - 1; i++){
+            acc += parts[i].length + 1;
+            var s2 = Math.abs(acc - mid);
+            if(s2 < bestScore){ bestScore = s2; best = acc; }
+          }
+        }
+        if(best < 0) best = Math.floor(mid);
+        var a = t.slice(0, best).trim(), b = t.slice(best).trim();
+        if(!a || !b) return null;
+        return a + "\n" + b;
+      }
+      function refreshCueMeta(row, c){
+        if(!row || !c) return;
+        var cps = cueCps(c), warn = cps > CPS_LIMIT;
+        row.classList.toggle("cps-warn", warn);
+        var badge = row.querySelector(".cps-badge");
+        if(badge){
+          badge.hidden = !warn;
+          if(warn) badge.textContent = "ဖတ်နှုန်း မြန် · " + Math.round(cps) + " CPS";
+        }
+        var wb = row.querySelector(".cue-wrap");
+        if(wb) wb.hidden = !needsWrap(c);
+      }
+      function updateCpsSummary(){
+        var el = $("cpsSummary"); if(!el) return;
+        var n = 0;
+        state.cues.forEach(function(c){ if(cueCps(c) > CPS_LIMIT) n++; });
+        el.hidden = !n;
+        if(n) el.textContent = "ဖတ်နှုန်း မြန်လွန်းသော cue " + n + " ခု ရှိပါတယ် (" + CPS_LIMIT + " CPS အထက်) — အချိန် ပိုပေးတာ၊ ဒါမှမဟုတ် စာသား တိုအောင် ပြင်တာ စဉ်းစားပါ။";
+      }
+      $("wrapAllBtn").addEventListener("click", function(){
+        var n = 0;
+        state.cues.forEach(function(c){
+          if(needsWrap(c)){
+            var w = splitWrapText(c.text);
+            if(w){ c.text = w; n++; }
+          }
+        });
+        if(n){ renderCues(); updateOverlay(); toast("Cue " + n + " ခုကို စာကြောင်း ၂ ကြောင်း ခွဲပြီးပါပြီ"); }
+        else toast("ခွဲစရာ ရှည်လွန်း cue မရှိပါ");
+      });
+
+      /* ---------- Shorts safe zones (preview only) ---------- */
+      function updateSafeZone(){
+        var el = $("safeZone"); if(!el) return;
+        var vertical = state.previewAspect === "9:16" || (state.previewAspect === "orig" && state.mode === "audio");
+        el.hidden = !(state.safeMain && vertical);
+      }
+      segWire("safeSeg", "safe", function(v){ state.safeMain = (v === "on"); updateSafeZone(); });
+      segWire("shortSafeSeg", "ssafe", function(v){ state.safeShort = (v === "on"); drawShortPreview(); });
+      function drawSafeZonesCanvas(g, W, H){
+        g.save();
+        g.fillStyle = "rgba(255,70,60,0.14)";
+        g.strokeStyle = "rgba(255,70,60,0.65)";
+        g.lineWidth = Math.max(1.5, W * 0.004);
+        g.setLineDash([W * 0.02, W * 0.014]);
+        var zones = [
+          [0, 0, W, H * 0.09],                 /* top bar */
+          [W * 0.87, H * 0.16, W * 0.13, H * 0.58], /* right action rail */
+          [0, H * 0.76, W, H * 0.24]           /* bottom caption / title area */
+        ];
+        zones.forEach(function(z){ g.fillRect(z[0], z[1], z[2], z[3]); g.strokeRect(z[0], z[1], z[2], z[3]); });
+        g.setLineDash([]);
+        g.fillStyle = "rgba(255,160,150,0.95)";
+        g.font = "700 " + Math.round(H * 0.017) + "px '" + firstFamily(state.style.font) + "',sans-serif";
+        g.textBaseline = "middle";
+        g.textAlign = "center";
+        g.fillText("Caption / ခေါင်းစဉ် နေရာ", W / 2, H * 0.88);
+        g.textAlign = "right";
+        g.fillText("ခလုတ်များ", W * 0.985, H * 0.45);
+        g.restore();
+      }
+
+      /* ---------- style presets ---------- */
+      var BUILTIN_PRESETS = [
+        { name: "Dhamma ပုံမှန်", style: { font: "'Padauk Sagar','Padauk',sans-serif", size: 5.5, color: "#ffffff", bg: true, pos: "bottom", posX: 50, posY: 92 }, logo: { enabled: false, size: 18, opacity: 90, posX: 88, posY: 9 } },
+        { name: "အဝါ ကြီးကြီး", style: { font: "'Padauk Sagar','Padauk',sans-serif", size: 7.5, color: "#ffd94d", bg: true, pos: "bottom", posX: 50, posY: 92 }, logo: { enabled: false, size: 18, opacity: 90, posX: 88, posY: 9 } },
+        { name: "အပေါ် ခေါင်းစဉ်", style: { font: "'Padauk Sagar','Padauk',sans-serif", size: 6, color: "#ffd94d", bg: true, pos: "top", posX: 50, posY: 9 }, logo: { enabled: false, size: 18, opacity: 90, posX: 88, posY: 9 } },
+        { name: "သေးသေး နောက်ခံမဲ့", style: { font: "'Padauk Sagar','Padauk',sans-serif", size: 4, color: "#ffffff", bg: false, pos: "bottom", posX: 50, posY: 92 }, logo: { enabled: false, size: 18, opacity: 90, posX: 88, posY: 9 } }
+      ];
+      function captureStylePreset(){
+        return {
+          style: { font: state.style.font, size: state.style.size, color: state.style.color, bg: state.style.bg, pos: state.style.pos, posX: state.style.posX, posY: state.style.posY },
+          logo: { enabled: state.logo.enabled, size: state.logo.size, opacity: state.logo.opacity, posX: state.logo.posX, posY: state.logo.posY }
+        };
+      }
+      function applyStylePreset(p){
+        if(!p) return;
+        if(p.style){
+          var s = p.style;
+          if(s.font) state.style.font = s.font;
+          if(isFinite(s.size)) state.style.size = Number(s.size);
+          if(s.color) state.style.color = s.color;
+          state.style.bg = s.bg !== false;
+          if(s.pos) state.style.pos = s.pos;
+          if(isFinite(s.posX)) state.style.posX = Number(s.posX);
+          if(isFinite(s.posY)) state.style.posY = Number(s.posY);
+        }
+        if(p.logo){
+          state.logo.enabled = !!p.logo.enabled;
+          if(isFinite(p.logo.size)) state.logo.size = Number(p.logo.size);
+          if(isFinite(p.logo.opacity)) state.logo.opacity = Number(p.logo.opacity);
+          if(isFinite(p.logo.posX)) state.logo.posX = Number(p.logo.posX);
+          if(isFinite(p.logo.posY)) state.logo.posY = Number(p.logo.posY);
+        }
+        syncStyleControls();
+        applyStyle(); applyLogo();
+        scheduleAutosave();
+      }
+      function getUserPresets(){ var p = lsGet("ss.presets"); return Array.isArray(p) ? p : []; }
+      function renderPresetList(){
+        var list = $("presetList"); if(!list) return;
+        list.innerHTML = "";
+        function chip(p, userIdx){
+          var wrap = document.createElement("span");
+          wrap.className = "preset-chip";
+          var b = document.createElement("button");
+          b.type = "button"; b.className = "preset-apply"; b.textContent = p.name;
+          b.title = "ဒီ Preset ကို သုံးမည်";
+          b.addEventListener("click", function(){ applyStylePreset(p); toast("Preset “" + p.name + "” သုံးပြီးပါပြီ"); });
+          wrap.appendChild(b);
+          if(userIdx != null){
+            var x = document.createElement("button");
+            x.type = "button"; x.className = "preset-del"; x.textContent = "×";
+            x.title = "Preset ဖျက်မည်"; x.setAttribute("aria-label", "Preset ဖျက်မည်");
+            x.addEventListener("click", function(){
+              var arr = getUserPresets(); arr.splice(userIdx, 1); lsSet("ss.presets", arr); renderPresetList();
+              toast("Preset ဖျက်ပြီးပါပြီ");
+            });
+            wrap.appendChild(x);
+          }
+          list.appendChild(wrap);
+        }
+        BUILTIN_PRESETS.forEach(function(p){ chip(p, null); });
+        getUserPresets().forEach(function(p, i){ chip(p, i); });
+      }
+      $("presetSaveBtn").addEventListener("click", function(){
+        var name = $("presetName").value.trim();
+        if(!name){ toast("Preset အမည် အရင် ရိုက်ပါ"); $("presetName").focus(); return; }
+        if(!LS_OK){ toast("ဒီ browser မှာ သိမ်းလို့ မရပါ (localStorage ပိတ်ထားပါတယ်)"); return; }
+        var cp = captureStylePreset();
+        var arr = getUserPresets().filter(function(p){ return p.name !== name; });
+        arr.unshift({ name: name, style: cp.style, logo: cp.logo });
+        if(lsSet("ss.presets", arr.slice(0, 30))){
+          $("presetName").value = "";
+          renderPresetList();
+          toast("Preset “" + name + "” သိမ်းပြီးပါပြီ");
+        } else toast("သိမ်းလို့ မရပါ — browser storage ပြည့်နေတာ ဖြစ်နိုင်ပါတယ်");
+      });
+
+      /* ---------- boot: offer the autosaved project, render lists ---------- */
+      (function initPersistence(){
+        var snap = lsGet("ss.autosave");
+        if(snap && snap.mediaName){
+          var info = $("restoreInfo");
+          if(info) info.textContent = snap.mediaName + " · " + fmtSavedAt(snap.savedAt) + " · စာတန်း " + (snap.cues ? snap.cues.length : 0) + " ပိုင်း";
+          var banner = $("restoreBanner");
+          if(banner) banner.hidden = false;
+          updateAutosaveLine(snap);
+        }
+        renderProjectList();
+        renderPresetList();
+        updateSafeZone();
+      })();
 
       updateShortSubInfo();
       drawShortPreview();
