@@ -336,6 +336,11 @@
         color:inherit;font-size:13px;font-variant-numeric:tabular-nums;
       }
       .bg-dur:focus{border-color:var(--accent);outline:none}
+      .bg-mode{
+        width:auto;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:var(--surface);
+        color:inherit;font-size:13px;
+      }
+      .bg-mode:focus{border-color:var(--accent);outline:none}
       .bg-item-btns{display:flex;flex-direction:column;gap:5px;flex:none}
       .bg-item-btns .mini-btn:disabled{opacity:.35;cursor:default}
       .bg-item-btns .mini-btn:disabled:hover{border-color:var(--line)}
@@ -682,7 +687,7 @@
                 <button class="btn small" id="shortAddVideoBtn" type="button">ဗီဒီယို ထည့်မည်</button>
                 <span class="fontfile-name" id="shortBgCount"></span>
               </div>
-              <p class="sub" style="margin:8px 0 0">ပုံ/ဗီဒီယို ဘယ်အချိုးအစား ဖြစ်ဖြစ် ရပါတယ် — ရွေးထားတဲ့ frame (<span class="short-dims">1080×1920</span>) နဲ့ မကိုက်ရင် အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။ ဗီဒီယိုထဲက အသံ မပါပါ — အသံဖိုင်ရဲ့ အသံကိုပဲ သုံးပါမည်။ ပုံ တစ်ပုံချင်းစီ ပြသချိန်ကို စက္ကန့်နဲ့ ချိန်နိုင်ပြီး၊ ဗီဒီယိုကတော့ သူ့ မူရင်း အရှည်အတိုင်း ဖွင့်ပါမည်။</p>
+              <p class="sub" style="margin:8px 0 0">ပုံ/ဗီဒီယို ဘယ်အချိုးအစား ဖြစ်ဖြစ် ရပါတယ် — ရွေးထားတဲ့ frame (<span class="short-dims">1080×1920</span>) နဲ့ မကိုက်ရင် အလယ်က ဖြတ်ပြီး ဖြည့်ပေးပါမည်။ ဗီဒီယိုထဲက အသံ မပါပါ — အသံဖိုင်ရဲ့ အသံကိုပဲ သုံးပါမည်။ ပုံ ရော ဗီဒီယို ပါ တစ်ချင်းစီ ပြသချိန်ကို စက္ကန့်နဲ့ ချိန်နိုင်ပါတယ် — ဗီဒီယိုကို မူရင်း အရှည်ထက် တိုအောင် ထားရင် အစပိုင်းကိုပဲ ဖြတ်ပြီး ဖွင့်ပါမည်၊ ရှည်အောင် ထားရင် ရွေးထားတဲ့ ဖြည့်နည်း အတိုင်း ဖွင့်ပါမည် — “နှေးကွက်” ဆိုရင် ဗီဒီယိုကို နှေးကွက်ဖြင့် ဆန့်ပြီး သတ်မှတ် အချိန် အပြည့် တစ်ခါတည်း ဖွင့်ပါမည် (ဥပမာ မူရင်း ၁၀ စက္ကန့်ကို ၂၀ စက္ကန့် ထားရင် 0.5× နှေးကွက်ဖြင့် ဖွင့်မည်)၊ “Loop” ဆိုရင် ဗီဒီယို ပြီးသွားတာနဲ့ အစက ပြန်ဖွင့်ပြီး သတ်မှတ် အချိန် ပြည့်တဲ့အထိ ထပ်ခါထပ်ခါ ဖွင့်ပါမည်။</p>
               <div style="margin-top:12px">
                 <label class="flabel" style="margin:0 0 6px">နောက်ခံ Loop</label>
                 <div class="seg" id="shortLoopSeg">
@@ -869,7 +874,12 @@
         /* Short maker background sequence (no count limit, photos and
            videos mixed, played back-to-back in list order):
            { kind:"image", name, url, img, photoDur } |
-           { kind:"video", name, url, videoEl, videoDur } */
+           { kind:"video", name, url, videoEl, videoDur, displayDur, fillMode }
+           displayDur is the video item's set display seconds (1–120);
+           it defaults to the clip's natural length (videoDur) once the
+           metadata loads — shorter trims from the start; longer is
+           filled per fillMode: "slow" (default) stretches the clip in
+           slow motion at natural÷set rate, "loop" repeats it. */
         shortBgItems: [],
         shortBgLoop: true,      // the whole sequence repeats until the audio ends
         shortAudioFile: null, shortAudioURL: null, shortAudioDur: 0,
@@ -2670,7 +2680,9 @@
          Background sequence (up to 5 photos/videos, cover-fit to
          1080×1920, played back-to-back in list order: photos hold for
          their set duration with a slow Ken Burns zoom, videos play for
-         their own length with their audio muted/ignored; the whole
+         their set display duration (default their own length — shorter
+         trims the clip, longer fills it by slow-motion stretch or by
+         looping, per the item's chosen fill mode) with their audio muted/ignored; the whole
          sequence optionally loops until the soundtrack ends, otherwise
          it plays once and holds the final item's last frame) + audio +
          subtitles from the editor or an imported SRT, rendered through
@@ -2743,17 +2755,66 @@
 
       /* ----- background sequence: timeline -----
          Items play back-to-back in list order. A photo occupies its
-         photoDur seconds; a video occupies its own length (0 while its
-         metadata is still loading, treated as "plays on from here").
+         photoDur seconds; a video occupies its set displayDur seconds
+         (default: its own natural length). A video slot shorter than
+         the clip trims it (plays from the start, cut at the slot end);
+         a slot longer than the clip is filled per the item's fillMode:
+         "slow" (default) plays the clip once in slow motion at
+         natural÷set rate, "loop" repeats it at normal speed — see
+         shortBgVideoPos / shortBgVideoRate. While a video's metadata
+         is still loading its slot is 0, treated as "plays on from here".
          Loop ON wraps the whole sequence; Loop OFF plays it once and
          then holds the final item's last frame. Everything is cut at
-         the soundtrack end by the render loops themselves. */
+         the soundtrack end by the render loops themselves. Preview and
+         both export paths share this one timeline via shortBgAt. */
       function shortBgItemDur(it){
         if(it.kind === "image"){
           var d = Number(it.photoDur);
           return isFinite(d) ? Math.max(1, Math.min(120, d)) : 5;
         }
+        var sd = Number(it.displayDur);
+        if(isFinite(sd) && sd > 0) return Math.max(1, Math.min(120, sd));
         return (it.videoDur && isFinite(it.videoDur) && it.videoDur > 0) ? it.videoDur : 0;
+      }
+      /* Map a video item's slot-local time onto the clip's own
+         timeline. Set ≤ natural: the local time itself (trim from the
+         start at normal speed). Set > natural: fillMode "slow" scales
+         the local time by natural÷set so the clip plays exactly once,
+         stretched across the whole slot; fillMode "loop" wraps with
+         modulo so the clip repeats. A held item (sequence finished,
+         whole-sequence Loop OFF) parks on the clip's last frame. */
+      function shortBgVideoPos(it, local, held){
+        var nat = (it.videoEl && isFinite(it.videoEl.duration) && it.videoEl.duration > 0)
+          ? it.videoEl.duration
+          : ((it.videoDur && isFinite(it.videoDur) && it.videoDur > 0) ? it.videoDur : 0);
+        if(!(nat > 0)) return Math.max(0, local);
+        if(held) return Math.max(0, nat - 0.04);
+        var set = shortBgItemDur(it);
+        var pos;
+        if(set > nat && it.fillMode === "loop"){
+          pos = Math.max(0, local) % nat;
+          /* Landing within a hair of the end would show the blank tail
+             frame — treat it as the loop restart instead. */
+          if(nat - pos < 0.03 && local > 0) pos = 0;
+          return pos;
+        }
+        if(set > nat) pos = Math.max(0, local) * nat / set; /* slow-motion stretch */
+        else pos = Math.max(0, local);
+        /* Never park on the very end frame (some clips render it
+           blank) — the last real frame is close enough. */
+        if(pos > nat - 0.04) pos = Math.max(0, nat - 0.04);
+        return pos;
+      }
+      /* The rate the item's video element must play at (relative to
+         the soundtrack clock) so free playback tracks the mapping
+         above: slow-motion items advance at natural÷set, everything
+         else at 1. Callers multiply by the transport's own rate
+         (preview speed, or the export rate while rendering). */
+      function shortBgVideoRate(it){
+        var nat = (it.videoDur && isFinite(it.videoDur) && it.videoDur > 0) ? it.videoDur : 0;
+        var set = shortBgItemDur(it);
+        if(nat > 0 && set > nat && it.fillMode !== "loop") return nat / set;
+        return 1;
       }
       function shortBgSeqDur(){
         var total = 0;
@@ -2803,8 +2864,22 @@
               if(end > 0 && Math.abs((v.currentTime || 0) - end) > 0.12){ try { v.currentTime = end; } catch(e){} }
               if(!v.paused) v.pause();
             } else {
-              if(Math.abs((v.currentTime || 0) - sel.local) > 0.3){ try { v.currentTime = sel.local; } catch(e){} }
-              if(shouldPlay && v.paused){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+              /* Slot-local time mapped through the item's fill mode
+                 (slow-motion stretch or loop wrap), and the element's
+                 own playback rate set to match: item rate × the
+                 transport rate (preview speed in preview, export rate
+                 while rendering — shortPlayer.playbackRate holds
+                 whichever is active), so preview and export advance
+                 the clip identically. Native looping is enabled only
+                 for loop-filled slots; slow-motion slots must play
+                 through once and stop at the clip end. */
+              var target = shortBgVideoPos(it, sel.local, false);
+              if(Math.abs((v.currentTime || 0) - target) > 0.3){ try { v.currentTime = target; } catch(e){} }
+              var wantRate = shortBgVideoRate(it) * (shortPlayer.playbackRate || 1);
+              if(Math.abs((v.playbackRate || 1) - wantRate) > 0.01){ try { v.playbackRate = wantRate; } catch(e){} }
+              var wantLoop = it.fillMode === "loop" && shortBgItemDur(it) > ((it.videoDur && it.videoDur > 0) ? it.videoDur : 0);
+              if(v.loop !== wantLoop) v.loop = wantLoop;
+              if(shouldPlay && (v.paused || v.ended)){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
               else if(!shouldPlay && !v.paused) v.pause();
             }
           } else if(!v.paused) v.pause();
@@ -2866,9 +2941,77 @@
             meta.textContent = "ပုံ" + (it.img && it.img.naturalWidth ? " · " + it.img.naturalWidth + "×" + it.img.naturalHeight : "");
           } else {
             meta.textContent = "ဗီဒီယို · " + (it.videoDur ? fmtClock(it.videoDur) : "ဖတ်နေပါတယ်…") +
-              (it.videoEl && it.videoEl.videoWidth ? " · " + it.videoEl.videoWidth + "×" + it.videoEl.videoHeight : "");
+              (it.videoEl && it.videoEl.videoWidth ? " · " + it.videoEl.videoWidth + "×" + it.videoEl.videoHeight : "") +
+              " · ပြသချိန် " + fmtClock(shortBgItemDur(it));
           }
           main.appendChild(meta);
+          if(it.kind === "video"){
+            var vDurRow = document.createElement("div");
+            vDurRow.className = "bg-item-dur";
+            var vLab = document.createElement("span");
+            vLab.textContent = "ကြာချိန် (စက္ကန့်)";
+            var vInp = document.createElement("input");
+            vInp.type = "number"; vInp.min = "1"; vInp.max = "120"; vInp.step = "1";
+            vInp.value = Math.round(shortBgItemDur(it)) || "";
+            vInp.className = "bg-dur";
+            vInp.setAttribute("aria-label", "ဗီဒီယို ပြသချိန် (စက္ကန့်)");
+            var vHint = document.createElement("span");
+            var setVHint = function(){
+              var set = shortBgItemDur(it), nat = it.videoDur || 0;
+              if(!nat){ vHint.textContent = ""; return; }
+              if(set < nat - 0.49) vHint.textContent = "မူရင်း " + fmtClock(nat) + " ကို ဖြတ်ဖွင့်မည်";
+              else if(set > nat + 0.49){
+                vHint.textContent = it.fillMode === "loop"
+                  ? "မူရင်း " + fmtClock(nat) + " ကို ထပ်ခါထပ်ခါ ဖွင့်မည်"
+                  : "နှေးကွက် " + (Math.round(nat / set * 100) / 100) + "× ဖြင့် ဆန့်ဖွင့်မည်";
+              }
+              else vHint.textContent = "မူရင်း အရှည်အတိုင်း";
+            };
+            setVHint();
+            var vModeLab = document.createElement("span");
+            vModeLab.textContent = "ရှည်လျှင်";
+            var vMode = document.createElement("select");
+            vMode.className = "bg-mode";
+            vMode.setAttribute("aria-label", "ဗီဒီယို ရှည်လျှင် ဖြည့်နည်း");
+            var optSlow = document.createElement("option");
+            optSlow.value = "slow"; optSlow.textContent = "နှေးကွက်";
+            var optLoop = document.createElement("option");
+            optLoop.value = "loop"; optLoop.textContent = "Loop";
+            vMode.appendChild(optSlow);
+            vMode.appendChild(optLoop);
+            vMode.value = it.fillMode === "loop" ? "loop" : "slow";
+            vMode.addEventListener("change", function(){
+              it.fillMode = vMode.value === "loop" ? "loop" : "slow";
+              setVHint();
+              scheduleAutosave();
+              drawShortPreview();
+            });
+            vInp.addEventListener("input", function(){
+              var v = Number(vInp.value);
+              if(isFinite(v) && v > 0){
+                it.displayDur = Math.max(1, Math.min(120, v));
+                setVHint();
+                scheduleAutosave();
+              }
+              drawShortPreview();
+            });
+            vInp.addEventListener("change", function(){
+              var v = Number(vInp.value);
+              if(!isFinite(v) || v < 1) v = (it.videoDur && it.videoDur > 0) ? Math.round(it.videoDur) : 5;
+              it.displayDur = Math.max(1, Math.min(120, Math.round(v)));
+              vInp.value = it.displayDur;
+              setVHint();
+              scheduleAutosave();
+              renderShortBgList();
+              drawShortPreview();
+            });
+            vDurRow.appendChild(vLab);
+            vDurRow.appendChild(vInp);
+            vDurRow.appendChild(vModeLab);
+            vDurRow.appendChild(vMode);
+            vDurRow.appendChild(vHint);
+            main.appendChild(vDurRow);
+          }
           if(it.kind === "image"){
             var durRow = document.createElement("div");
             durRow.className = "bg-item-dur";
@@ -2942,9 +3085,13 @@
         v.muted = true;
         v.playsInline = true;
         v.preload = "auto";
-        var it = { kind: "video", name: file.name, url: url, videoEl: v, videoDur: 0 };
+        var it = { kind: "video", name: file.name, url: url, videoEl: v, videoDur: 0, displayDur: 0, fillMode: "slow" };
         v.addEventListener("loadedmetadata", function(){
           it.videoDur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+          /* Default display duration = the clip's natural length. */
+          if(it.videoDur > 0 && !(Number(it.displayDur) > 0)){
+            it.displayDur = Math.max(1, Math.min(120, Math.round(it.videoDur)));
+          }
           renderShortBgList();
           drawShortPreview();
         });
@@ -2984,13 +3131,21 @@
             drawn = true;
           } else if(it.kind === "video" && it.videoEl && it.videoEl.videoWidth){
             /* Cover-fit the video's frame at its local time (no Ken
-               Burns — the video itself moves). Nudge it onto the local
-               time first so a paused preview/export shows the right
-               frame; a held item stays on its last frame. */
+               Burns — the video itself moves). The slot-local time is
+               mapped through the item's fill mode first (slow-motion
+               stretch or loop wrap), a held item stays on its last
+               frame. Nudge the element onto that time so a paused
+               preview/export shows the right frame. */
             var v = it.videoEl;
-            var target = sel.local;
-            if(sel.held && isFinite(v.duration) && v.duration > 0) target = Math.max(0, v.duration - 0.04);
-            if(Math.abs((v.currentTime || 0) - target) > 0.12){
+            var target = shortBgVideoPos(it, sel.local, sel.held);
+            /* A paused element is nudged on a tight tolerance so a
+               still preview/export frame is exact; a playing element
+               gets a loose one — tight repeated seeks stall software
+               decoders and freeze the very frames being drawn, while
+               free playback at the matched rate tracks the target on
+               its own (syncShortBgVideos corrects real drift). */
+            var tol = (v.paused || v.ended) ? 0.12 : 0.35;
+            if(Math.abs((v.currentTime || 0) - target) > tol){
               try { v.currentTime = target; } catch(e){}
             }
             var vscale = Math.max(W / v.videoWidth, H / v.videoHeight);
@@ -3734,7 +3889,7 @@
           cues: state.cues.map(function(c){ return { start: c.start, end: c.end, text: c.text }; }),
           style: { font: state.style.font, size: state.style.size, color: state.style.color, bg: state.style.bg, pos: state.style.pos, posX: state.style.posX, posY: state.style.posY },
           logo: { enabled: state.logo.enabled, size: state.logo.size, opacity: state.logo.opacity, posX: state.logo.posX, posY: state.logo.posY, name: state.logo.name || "" },
-          shortBg: state.shortBgItems.map(function(it){ return { kind: it.kind, name: it.name, photoDur: it.photoDur || null }; }),
+          shortBg: state.shortBgItems.map(function(it){ return { kind: it.kind, name: it.name, photoDur: it.photoDur || null, displayDur: it.displayDur || null, fillMode: it.kind === "video" ? (it.fillMode === "loop" ? "loop" : "slow") : null }; }),
           shortBgLoop: state.shortBgLoop,
           shortSubSource: state.shortSubSource,
           shortAspect: state.shortAspect,
@@ -3823,7 +3978,11 @@
         if(note){
           if(snap.shortBg && snap.shortBg.length && !state.shortBgItems.length){
             note.hidden = false;
-            note.textContent = "သိမ်းထားသော Project ထဲက နောက်ခံတွေ — ဖိုင် ပြန်ထည့်ပေးရန် လိုပါတယ် (အစဉ်လိုက်): " + snap.shortBg.map(function(b, i){ return (i + 1) + ". " + b.name; }).join(" · ");
+            note.textContent = "သိမ်းထားသော Project ထဲက နောက်ခံတွေ — ဖိုင် ပြန်ထည့်ပေးရန် လိုပါတယ် (အစဉ်လိုက်): " + snap.shortBg.map(function(b, i){
+              var d = b.kind === "video" ? b.displayDur : b.photoDur;
+              var extra = d ? " (ပြသချိန် " + d + " စက္ကန့်" + (b.kind === "video" ? " · ရှည်လျှင် " + (b.fillMode === "loop" ? "Loop" : "နှေးကွက်") : "") + ")" : "";
+              return (i + 1) + ". " + b.name + extra;
+            }).join(" · ");
           } else note.hidden = true;
         }
       }
