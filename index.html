@@ -182,6 +182,14 @@
         text-overflow:ellipsis;white-space:nowrap;
       }
       @media (max-width:640px){.transport .fname{display:none}}
+      .transport{flex-wrap:wrap}
+      .short-transport{flex-wrap:wrap}
+      .speed-wrap{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+      .speed-wrap .flabel{margin:0;font-size:12px}
+      select.speed-sel{width:auto;padding:6px 8px;font-size:13px}
+      .speed-export-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+      .speed-export-row .flabel{margin:0}
+      .speed-export-row .sub{flex:1;min-width:220px}
 
       /* ---------- forms ---------- */
       label.flabel{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
@@ -491,6 +499,15 @@
               </button>
               <span class="time" id="timeLabel">0:00 / 0:00</span>
               <input type="range" id="seekBar" min="0" max="0" step="0.05" value="0" aria-label="Seek" />
+              <label class="speed-wrap"><span class="flabel">ကြည့်ရှု Speed</span><select class="select-input speed-sel" id="previewSpeedSel" aria-label="ကြည့်ရှု Speed">
+                <option value="0.25">0.25×</option>
+                <option value="0.5">0.5×</option>
+                <option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2">2×</option>
+              </select></label>
               <span class="fname" id="fileName"></span>
               <button class="btn small" id="newVideoBtn" type="button">ဖိုင် အသစ်</button>
             </div>
@@ -608,6 +625,19 @@
             <section class="card" id="videoExportCard" aria-labelledby="exportH">
               <h2 id="exportH">စာတန်းပါ ဗီဒီယို ထုတ်ရန်</h2>
               <p class="sub">စာတန်းကို ဗီဒီယိုထဲ တိုက်ရိုက် မြှုပ်ပြီး MP4 ဖိုင် ထုတ်ပေးမည်။ ဒီ browser က MP4 မထုတ်နိုင်ရင်သာ WebM နဲ့ ထုတ်ပေးမည်ဖြစ်ပြီး အဲဒါဆို စတင်ခင် ကြိုပြောပြပါမည်။</p>
+              <div class="speed-export-row">
+                <label class="flabel" for="exportSpeedSel">Export Speed</label>
+                <select class="select-input speed-sel" id="exportSpeedSel" aria-label="Export Speed">
+                  <option value="0.25">0.25×</option>
+                  <option value="0.5">0.5×</option>
+                  <option value="0.75">0.75×</option>
+                  <option value="1" selected>မူရင်း (1×)</option>
+                  <option value="1.25">1.25×</option>
+                  <option value="1.5">1.5×</option>
+                  <option value="2">2×</option>
+                </select>
+                <span class="sub" style="margin:0">Speed ပြောင်းရင် ထွက်လာတဲ့ ဗီဒီယို အရှည် လိုက်ပြောင်းမည် (ဥပမာ 2× ဆိုရင် အရှည် ထက်ဝက်) — စာတန်း timing ပါ လိုက်ညှိပေးပြီး အသံ pitch မပြောင်းပါ (အသံ မြင့်/နိမ့် မသွားပါ)။ Short Export မှာလည်း ဒီ Speed ပဲ သုံးပါမည်။</span>
+              </div>
               <div class="row" style="align-items:center">
                 <button class="btn primary" id="exportBtn" type="button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
@@ -689,9 +719,31 @@
                 </button>
                 <span class="time" id="shortTimeLabel">0:00 / 0:00</span>
                 <input type="range" id="shortSeek" min="0" max="0" step="0.05" value="0" aria-label="Short seek" />
+                <label class="speed-wrap"><span class="flabel">ကြည့်ရှု Speed</span><select class="select-input speed-sel" id="shortPreviewSpeedSel" aria-label="Short ကြည့်ရှု Speed">
+                  <option value="0.25">0.25×</option>
+                  <option value="0.5">0.5×</option>
+                  <option value="0.75">0.75×</option>
+                  <option value="1" selected>1×</option>
+                  <option value="1.25">1.25×</option>
+                  <option value="1.5">1.5×</option>
+                  <option value="2">2×</option>
+                </select></label>
               </div>
               <audio id="shortPlayer" preload="metadata" hidden></audio>
 
+              <div class="speed-export-row" style="margin-top:12px">
+                <label class="flabel" for="shortExportSpeedSel">Export Speed</label>
+                <select class="select-input speed-sel" id="shortExportSpeedSel" aria-label="Short Export Speed">
+                  <option value="0.25">0.25×</option>
+                  <option value="0.5">0.5×</option>
+                  <option value="0.75">0.75×</option>
+                  <option value="1" selected>မူရင်း (1×)</option>
+                  <option value="1.25">1.25×</option>
+                  <option value="1.5">1.5×</option>
+                  <option value="2">2×</option>
+                </select>
+                <span class="sub" style="margin:0">အပေါ်က ဗီဒီယို Export Speed နဲ့ အတူတူပါပဲ — တစ်ခုမှာ ပြောင်းရင် နောက်တစ်ခုပါ လိုက်ပြောင်းပါမည်။ Speed ပြောင်းရင် Short အရှည် လိုက်ပြောင်းပြီး အသံ pitch မပြောင်းပါ။</span>
+              </div>
               <div class="row" style="align-items:center;margin-top:12px">
                 <button class="btn primary" id="shortExportBtn" type="button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
@@ -799,6 +851,15 @@
         activeCueId: null,
         transcribing: false,
         exporting: false,
+        /* Speed controls. previewSpeed / shortPreviewSpeed only change
+           how fast the preview plays (pitch preserved) — they never
+           touch cue times, the seek mapping or any export. exportSpeed
+           is ONE shared setting used by both the main video export and
+           the Short maker export: the output timeline is the source
+           timeline divided by this rate. */
+        previewSpeed: 1,
+        shortPreviewSpeed: 1,
+        exportSpeed: 1,
         mode: "video",        // "video" | "audio"
         previewAspect: "orig", // main stage preview frame: "orig" | "9:16" | "16:9" — preview only, export keeps the source size
         safeMain: false,       // Shorts safe-zone shading on the main stage (9:16 frame only, preview only)
@@ -978,11 +1039,148 @@
       video.addEventListener("loadedmetadata", function(){
         seekBar.max = video.duration || 0;
         timeLabel.textContent = fmtClock(0) + " / " + fmtClock(video.duration);
+        /* A fresh load can reset the element's rate — re-apply the
+           chosen preview speed (never the export speed). */
+        if(!state.exporting) applyPreviewSpeed();
         updateOverlay();
       });
       video.addEventListener("error", function(){
         if(state.videoFile) toast("ဒီ ဖိုင်ကို browser က မဖွင့်နိုင်ပါ — MP4 (H.264) ဗီဒီယို သို့မဟုတ် MP3/WAV အသံဖိုင် စမ်းကြည့်ပါ");
       });
+
+      /* ================= speed controls =================
+         Preview speed: playbackRate + pitch preservation on the media
+         element only. Export speed: one shared rate for both exports,
+         kept in sync between the two export-card selectors. During an
+         export the media element is played AT the export rate, so the
+         picture, the cues and (for Shorts) the background timeline all
+         stay in source time and in sync; the paths below then map that
+         source time onto the output timeline (÷ rate). */
+      var SPEED_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
+      function setPreservesPitch(el){
+        if(!el) return;
+        try { el.preservesPitch = true; } catch(e){}
+        try { el.webkitPreservesPitch = true; } catch(e){}
+        try { el.mozPreservesPitch = true; } catch(e){}
+      }
+      function pitchPreserveSupported(el){
+        if(!el) return false;
+        return ("preservesPitch" in el) || ("webkitPreservesPitch" in el) || ("mozPreservesPitch" in el);
+      }
+      function applyPreviewSpeed(){
+        setPreservesPitch(video);
+        try { video.playbackRate = state.previewSpeed || 1; } catch(e){}
+        try { video.defaultPlaybackRate = state.previewSpeed || 1; } catch(e){}
+      }
+      function applyShortPreviewSpeed(){
+        var sp = $("shortPlayer");
+        setPreservesPitch(sp);
+        try { sp.playbackRate = state.shortPreviewSpeed || 1; } catch(e){}
+        try { sp.defaultPlaybackRate = state.shortPreviewSpeed || 1; } catch(e){}
+      }
+      function setExportSpeed(v){
+        v = Number(v) || 1;
+        if(SPEED_RATES.indexOf(v) < 0) v = 1;
+        state.exportSpeed = v;
+        var a = $("exportSpeedSel"), b = $("shortExportSpeedSel");
+        if(a && a.value !== String(v)) a.value = String(v);
+        if(b && b.value !== String(v)) b.value = String(v);
+        scheduleAutosave();
+      }
+      /* Pitch-preserving time stretch of a decoded AudioBuffer (WSOLA —
+         waveform-similarity overlap-add on the PCM samples). Returns a
+         new buffer whose duration is buf.duration / rate with the pitch
+         unchanged (no chipmunk / deep-voice shift): the analysis hop
+         advances by rate× the synthesis hop, and each grain is aligned
+         to the already-synthesised output by a coarse-to-fine
+         cross-correlation search on a decimated mono guide, so periodic
+         (voiced) content joins seamlessly. Used by the WebCodecs export
+         paths, whose audio is encoded from the decoded buffer; the
+         recorder paths instead play the media element at the export
+         rate with preservesPitch. Synchronous — a few seconds on long
+         files — so callers yield to the UI first. */
+      function stretchAudioBuffer(buf, rate){
+        var sr = buf.sampleRate;
+        var ch = Math.min(2, buf.numberOfChannels || 1);
+        var inLen = buf.length;
+        var outLen = Math.max(1, Math.round(inLen / rate));
+        var oc = new OfflineAudioContext(ch, outLen, sr);
+        var out = oc.createBuffer(ch, outLen, sr);
+        var ins = [], outs = [];
+        var c;
+        for(c = 0; c < ch; c++){ ins.push(buf.getChannelData(c)); outs.push(out.getChannelData(c)); }
+        if(!(rate > 0) || rate === 1 || inLen < 8192){
+          for(c = 0; c < ch; c++) outs[c].set(ins[c].subarray(0, Math.min(inLen, outLen)));
+          return out;
+        }
+        var W = 2048, Hs = 512, DEC = 4;
+        var Wd = Math.floor(W / DEC), Hsd = Math.floor(Hs / DEC);
+        var guideLen = Math.ceil(inLen / DEC);
+        var guide = new Float32Array(guideLen);
+        for(var gi = 0; gi < guideLen; gi++){
+          var gs = 0;
+          for(var gc = 0; gc < ch; gc++) gs += ins[gc][gi * DEC] || 0;
+          guide[gi] = gs / ch;
+        }
+        var win = new Float32Array(W);
+        for(var wi = 0; wi < W; wi++) win[wi] = 0.5 - 0.5 * Math.cos(2 * Math.PI * wi / (W - 1));
+        var wgt = new Float32Array(outLen);
+        var cmpLen = Math.min(Wd - Hsd, 256);
+        var maxOffD = Math.floor(W / 2 / DEC);
+        function corrAt(candD, refD){
+          var dot = 0, eC = 0, eR = 0;
+          for(var j = 0; j < cmpLen; j++){
+            var cv = guide[candD + j] || 0, rv = guide[refD + j] || 0;
+            dot += cv * rv; eC += cv * cv; eR += rv * rv;
+          }
+          var den = Math.sqrt(eC * eR);
+          return den > 1e-9 ? dot / den : 0;
+        }
+        var Ha = Hs * rate;
+        var outPos = 0, inPos = 0, prevPos = -1;
+        while(outPos < outLen){
+          var center = Math.round(inPos);
+          var srcPos = center;
+          if(prevPos >= 0 && center > 0 && center < inLen - W){
+            var refD = Math.round((prevPos + Hs) / DEC);
+            var bestD = Math.round(center / DEC), bestScore = -Infinity, dOff;
+            for(dOff = -maxOffD; dOff <= maxOffD; dOff += 4){
+              var candD = Math.round(center / DEC) + dOff;
+              if(candD < 0 || candD + cmpLen > guideLen) continue;
+              var sc = corrAt(candD, refD);
+              if(sc > bestScore){ bestScore = sc; bestD = candD; }
+            }
+            for(dOff = -3; dOff <= 3; dOff++){
+              if(!dOff) continue;
+              var candD2 = bestD + dOff;
+              if(candD2 < 0 || candD2 + cmpLen > guideLen) continue;
+              var sc2 = corrAt(candD2, refD);
+              if(sc2 > bestScore){ bestScore = sc2; bestD = candD2; }
+            }
+            srcPos = Math.max(0, Math.min(inLen - 1, bestD * DEC));
+          }
+          if(srcPos >= inLen) break;
+          if(inLen >= W && srcPos > inLen - W) srcPos = inLen - W;
+          var segLen = Math.min(W, inLen - srcPos, outLen - outPos);
+          if(segLen <= 0) break;
+          for(c = 0; c < ch; c++){
+            var ic = ins[c], oc2 = outs[c];
+            for(var j2 = 0; j2 < segLen; j2++) oc2[outPos + j2] += win[j2] * ic[srcPos + j2];
+          }
+          for(var j3 = 0; j3 < segLen; j3++) wgt[outPos + j3] += win[j3];
+          prevPos = srcPos;
+          outPos += Hs;
+          inPos += Ha;
+        }
+        for(c = 0; c < ch; c++){
+          var od = outs[c];
+          for(var oi = 0; oi < outLen; oi++){
+            var wv = wgt[oi];
+            if(wv > 1e-3) od[oi] /= wv;
+          }
+        }
+        return out;
+      }
 
       /* ================= transport ================= */
       var playBtn = $("playBtn"), playIcon = $("playIcon"), pauseIcon = $("pauseIcon");
@@ -996,6 +1194,12 @@
       video.addEventListener("pause", syncPlayIcon);
       video.addEventListener("ended", syncPlayIcon);
       seekBar.addEventListener("input", function(){ video.currentTime = Number(seekBar.value); });
+      $("previewSpeedSel").addEventListener("change", function(){
+        state.previewSpeed = Number(this.value) || 1;
+        applyPreviewSpeed();
+        scheduleAutosave();
+      });
+      $("exportSpeedSel").addEventListener("change", function(){ setExportSpeed(Number(this.value) || 1); });
       document.addEventListener("keydown", function(e){
         if($("studio").hidden) return;
         var t = e.target;
@@ -2080,6 +2284,7 @@
         if(es.watchdog) clearInterval(es.watchdog);
         video.removeEventListener("ended", es.onEnded);
         video.pause();
+        applyPreviewSpeed();
         renderBadge.classList.remove("on");
         stage.classList.remove("exporting");
         canvas.hidden = true;
@@ -2153,6 +2358,13 @@
         function begin(){
           if(started || exportState !== es) return;
           started = true;
+          /* Play AT the export rate: the recorder paths then record the
+             sped-up / slowed-down playback directly (pitch preserved by
+             the element), and the WebCodecs path maps this source-time
+             playback onto the ÷rate output grid. Restored to the
+             preview speed when the export ends. */
+          setPreservesPitch(video);
+          try { video.playbackRate = es.rate || 1; } catch(e){}
           var p = video.play();
           if(p && p.catch) p.catch(function(){});
           (function draw(){
@@ -2180,6 +2392,7 @@
         if(es.watchdog) clearInterval(es.watchdog);
         video.removeEventListener("ended", es.onEnded);
         video.pause();
+        applyPreviewSpeed();
         renderBadge.classList.remove("on");
         stage.classList.remove("exporting");
         canvas.hidden = true;
@@ -2190,9 +2403,10 @@
            full; make sure the video track still spans the whole timeline
            by encoding the held final frame at the final 30fps slot before
            flushing — otherwise, on a slow device, the video track can end
-           seconds before the audio does. */
+           seconds before the audio does. The timeline here is the OUTPUT
+           timeline: source duration ÷ export rate. */
         try {
-          var totalSec = (isFinite(video.duration) && video.duration > 0) ? video.duration : (es.knownSeconds || 0);
+          var totalSec = (isFinite(video.duration) && video.duration > 0) ? video.duration / (es.rate || 1) : (es.knownSeconds || 0);
           var finalSlot = Math.round(totalSec * 30) - 1;
           if(es.encoder && es.encoder.state === "configured" && finalSlot > es.lastSlot){
             var fts = Math.round(finalSlot * 1000000 / 30);
@@ -2215,10 +2429,10 @@
           es.muxer.finalize();
           deliverMp4(new Blob([es.target.buffer], { type: "video/mp4" }),
             baseName(state.videoFile) + "-subtitled.mp4",
-            (isFinite(video.duration) && video.duration > 0) ? video.duration : (es.knownSeconds || 0),
+            (isFinite(video.duration) && video.duration > 0) ? video.duration / (es.rate || 1) : (es.knownSeconds || 0),
             0, 0,
             function(){
-              setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+              setExportStatus(es.rate !== 1 ? "စာတန်းပါ MP4 ဗီဒီယို (Speed " + es.rate + "×) ထုတ်ပြီးပါပြီ။" : "စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
               toast("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
               setTimeout(function(){ setExportProgress(null); }, 1200);
             }, null);
@@ -2230,6 +2444,19 @@
       function startRecorderExport(plan){
         /* plan: { mime, format: "mp4" | "webm" } — MediaRecorder path, used
            for native MP4 (preferred) and for the WebM fallback. */
+        var rate0 = state.exportSpeed || 1;
+        if(rate0 !== 1 && !pitchPreserveSupported(video)){
+          /* This path takes its audio from the media element's own
+             playback; without pitch preservation a non-1× rate would
+             silently chipmunk / deepen the voice. Refuse honestly
+             instead (the WebCodecs path stretches the decoded audio in
+             software and does not have this limit). */
+          state.exporting = false;
+          exportBtn.disabled = false;
+          setExportProgress(null);
+          setExportStatus("ဒီ browser က အသံ pitch မပြောင်းဘဲ Speed ချိန်တာကို မထောက်ပံ့ပါ — Export Speed ကို မူရင်း (1×) ပြန်ထားပြီး စမ်းပါ၊ သို့မဟုတ် နောက်ဆုံး Chrome နဲ့ စမ်းကြည့်ပါ။", "err");
+          return;
+        }
         if(!window.MediaRecorder || !canvas.captureStream){
           state.exporting = false;
           exportBtn.disabled = false;
@@ -2263,7 +2490,7 @@
         }
         var chunks = [];
         recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
-        var es = { mode: "recorder", recorder: recorder, format: plan.format, raf: 0, watchdog: null,
+        var es = { mode: "recorder", recorder: recorder, format: plan.format, rate: rate0, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, recorderStarted: false,
                    sawFrame: false, sampleBroken: false, frameNo: 0, lastDrawAt: 0 };
         recorder.onstop = function(){
@@ -2284,7 +2511,7 @@
             /* Browser-native MP4 muxers can write broken header durations
                (mvhd 0, ~3s track durations) — repair before download. */
             deliverMp4(new Blob(chunks, { type: mt }), baseName(state.videoFile) + "-subtitled.mp4",
-              (isFinite(video.duration) && video.duration > 0) ? video.duration : 0,
+              (isFinite(video.duration) && video.duration > 0) ? video.duration / (es.rate || 1) : 0,
               0, 0,
               function(){
                 setExportStatus("စာတန်းပါ MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
@@ -2334,7 +2561,8 @@
         var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
                    frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
-                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration : 0 };
+                   rate: state.exportSpeed || 1,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration / (state.exportSpeed || 1) : 0 };
         var encoder = new VideoEncoder({
           output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
           error: function(e){ es.encoderError = e; }
@@ -2342,8 +2570,22 @@
         encoder.configure(prep.videoCfg);
         es.encoder = encoder;
         beginExportUI(es);
-        setExportStatus("MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
-        encodeAudioIntoMuxer(prep, muxer).then(function(){
+        setExportStatus(es.rate !== 1 ? "အသံကို Speed " + es.rate + "× ချိန်နေပါတယ် (pitch မပြောင်းပါ)…" : "MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
+        /* At a non-1× export speed the decoded audio is time-stretched
+           (pitch preserved) BEFORE it is encoded, so the audio track
+           spans exactly source ÷ rate — the same output timeline the
+           video frames are stamped onto below. The stretch is CPU work
+           on a long file, so yield once to let the status paint. */
+        var stretchStep = (es.rate !== 1)
+          ? new Promise(function(res){ setTimeout(res, 30); }).then(function(){
+              prep.audioBuf = stretchAudioBuffer(prep.audioBuf, es.rate);
+              es.knownSeconds = prep.audioBuf.duration;
+            })
+          : Promise.resolve();
+        stretchStep.then(function(){
+          if(exportState !== es) return;
+          return encodeAudioIntoMuxer(prep, muxer);
+        }).then(function(){
           if(exportState !== es) return;
           setExportStatus("");
           startRenderLoop(es, function(){
@@ -2351,8 +2593,11 @@
             if(encoder.encodeQueueSize > 4) return;
             /* Feed frames on an exact 30fps timestamp grid (µs), not raw
                media-clock values: editors and Facebook read the resulting
-               constant frame rate and sample table cleanly. */
-            var slot = Math.round((video.currentTime || 0) * 30);
+               constant frame rate and sample table cleanly. The grid is
+               the OUTPUT timeline — the element plays at the export
+               rate, so output time is source time ÷ rate (at 1× this is
+               exactly the old behaviour). */
+            var slot = Math.round((video.currentTime || 0) / (es.rate || 1) * 30);
             if(slot <= es.lastSlot) return;
             es.lastSlot = slot;
             var ts = Math.round(slot * 1000000 / 30);
@@ -2795,6 +3040,7 @@
         state.shortAudioDur = 0;
         shortPlayer.src = state.shortAudioURL;
         shortPlayer.load();
+        applyShortPreviewSpeed();
         $("shortAudioInfo").textContent = "အသံ: " + file.name;
       }
       $("shortAudioBtn").addEventListener("click", function(){ $("shortAudioInput").click(); });
@@ -2838,6 +3084,12 @@
           shortRaf = requestAnimationFrame(shortPreviewLoop);
         }
       }
+      $("shortPreviewSpeedSel").addEventListener("change", function(){
+        state.shortPreviewSpeed = Number(this.value) || 1;
+        applyShortPreviewSpeed();
+        scheduleAutosave();
+      });
+      $("shortExportSpeedSel").addEventListener("change", function(){ setExportSpeed(Number(this.value) || 1); });
       $("shortPlayBtn").addEventListener("click", function(){
         if(!state.shortAudioFile){ toast("အရင် အသံဖိုင် ရွေးပါ"); return; }
         if(shortPlayer.paused) shortPlayer.play(); else shortPlayer.pause();
@@ -2893,6 +3145,7 @@
         if(es.watchdog) clearInterval(es.watchdog);
         shortPlayer.removeEventListener("ended", es.onEnded);
         shortPlayer.pause();
+        applyShortPreviewSpeed();
         pauseAllShortBgVideos();
         renderBadge.classList.remove("on");
         stage.classList.remove("exporting");
@@ -2944,6 +3197,13 @@
         function begin(){
           if(started || shortExportState !== es) return;
           started = true;
+          /* Play the soundtrack AT the export rate (pitch preserved):
+             the frame drawing below reads the player clock in source
+             time, so the background sequence and the cues stay in sync
+             untouched, while the recording / frame grid compresses or
+             stretches that timeline by the rate. */
+          setPreservesPitch(shortPlayer);
+          try { shortPlayer.playbackRate = es.rate || 1; } catch(e){}
           var p = shortPlayer.play();
           if(p && p.catch) p.catch(function(){});
           (function draw(){
@@ -2970,6 +3230,7 @@
         if(es.watchdog) clearInterval(es.watchdog);
         shortPlayer.removeEventListener("ended", es.onEnded);
         shortPlayer.pause();
+        applyShortPreviewSpeed();
         pauseAllShortBgVideos();
         renderBadge.classList.remove("on");
         stage.classList.remove("exporting");
@@ -3005,7 +3266,7 @@
             es.knownSeconds || shortDur() || 0,
             SHORT_W, SHORT_H,
             function(){
-              setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
+              setShortStatus(es.rate !== 1 ? "စာတန်းပါ Short MP4 ဗီဒီယို (Speed " + es.rate + "×) ထုတ်ပြီးပါပြီ။" : "စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
               toast("Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ");
               setTimeout(function(){ setShortProgress(null); }, 1200);
             },
@@ -3024,6 +3285,19 @@
       }
       function startShortRecorderExport(plan){
         /* plan: { mime, format: "mp4" | "webm", cues } */
+        var rate0 = state.exportSpeed || 1;
+        if(rate0 !== 1 && !pitchPreserveSupported(shortPlayer)){
+          /* Same rule as the main recorder path: this path records the
+             player element's own playback, so without pitch preservation
+             a non-1× rate would silently shift the voice. Refuse
+             honestly instead of shipping a pitch-shifted Short. */
+          state.exporting = false;
+          state.shortExporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortProgress(null);
+          setShortStatus("ဒီ browser က အသံ pitch မပြောင်းဘဲ Speed ချိန်တာကို မထောက်ပံ့ပါ — Export Speed ကို မူရင်း (1×) ပြန်ထားပြီး စမ်းပါ၊ သို့မဟုတ် နောက်ဆုံး Chrome နဲ့ စမ်းကြည့်ပါ။", "err");
+          return;
+        }
         if(!window.MediaRecorder || !canvas.captureStream){
           state.exporting = false;
           $("shortExportBtn").disabled = false;
@@ -3063,7 +3337,7 @@
         }
         var chunks = [];
         recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size) chunks.push(ev.data); };
-        var es = { mode: "recorder", recorder: recorder, format: plan.format, cues: plan.cues, raf: 0, watchdog: null,
+        var es = { mode: "recorder", recorder: recorder, format: plan.format, cues: plan.cues, rate: rate0, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, recorderStarted: false,
                    sawFrame: false, sampleBroken: false, frameNo: 0, lastDrawAt: 0 };
         recorder.onstop = function(){
@@ -3079,7 +3353,7 @@
           var ext = plan.format === "mp4" ? ".mp4" : ".webm";
           if(plan.format === "mp4"){
             deliverMp4(new Blob(chunks, { type: mt }), baseName(state.shortAudioFile) + "-short.mp4",
-              shortDur() || state.shortAudioDur || 0,
+              (shortDur() || state.shortAudioDur || 0) / (es.rate || 1),
               SHORT_W, SHORT_H,
               function(){
                 setShortStatus("စာတန်းပါ Short MP4 ဗီဒီယို ထုတ်ပြီးပါပြီ။", "ok");
@@ -3131,7 +3405,8 @@
         var es = { mode: "webcodecs", muxer: muxer, target: target, encoder: null, cues: cues, raf: 0, watchdog: null,
                    cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
                    frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
-                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration : 0 };
+                   rate: state.exportSpeed || 1,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration / (state.exportSpeed || 1) : 0 };
         var encoder = new VideoEncoder({
           output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
           error: function(e){ es.encoderError = e; }
@@ -3139,16 +3414,29 @@
         encoder.configure(prep.videoCfg);
         es.encoder = encoder;
         beginShortExportUI(es);
-        setShortStatus("MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
-        encodeAudioIntoMuxer(prep, muxer).then(function(){
+        setShortStatus(es.rate !== 1 ? "အသံကို Speed " + es.rate + "× ချိန်နေပါတယ် (pitch မပြောင်းပါ)…" : "MP4 အတွက် အသံ ပြင်ဆင်နေပါတယ်…");
+        /* Same pitch-preserving stretch as the main export: the audio
+           track is encoded at source ÷ rate, matching the ÷rate frame
+           grid below. Yield once so the status can paint first. */
+        var stretchStep = (es.rate !== 1)
+          ? new Promise(function(res){ setTimeout(res, 30); }).then(function(){
+              prep.audioBuf = stretchAudioBuffer(prep.audioBuf, es.rate);
+              es.knownSeconds = prep.audioBuf.duration;
+            })
+          : Promise.resolve();
+        stretchStep.then(function(){
+          if(shortExportState !== es) return;
+          return encodeAudioIntoMuxer(prep, muxer);
+        }).then(function(){
           if(shortExportState !== es) return;
           setShortStatus("");
           startShortRenderLoop(es, function(){
             if(es.encoderError || encoder.state !== "configured") return;
             if(encoder.encodeQueueSize > 4) return;
-            /* Exact 30fps timestamp grid (µs) from the audio clock — see
-               the main export for why raw clock values are not fed. */
-            var slot = Math.round((shortPlayer.currentTime || 0) * 30);
+            /* Exact 30fps timestamp grid (µs) on the OUTPUT timeline
+               (audio clock ÷ export rate) — see the main export for why
+               raw clock values are not fed. */
+            var slot = Math.round((shortPlayer.currentTime || 0) / (es.rate || 1) * 30);
             if(slot <= es.lastSlot) return;
             es.lastSlot = slot;
             var ts = Math.round(slot * 1000000 / 30);
@@ -3450,7 +3738,10 @@
           shortBgLoop: state.shortBgLoop,
           shortSubSource: state.shortSubSource,
           shortAspect: state.shortAspect,
-          previewAspect: state.previewAspect
+          previewAspect: state.previewAspect,
+          previewSpeed: state.previewSpeed,
+          shortPreviewSpeed: state.shortPreviewSpeed,
+          exportSpeed: state.exportSpeed
         };
       }
       var autosaveArmed = false, autosaveTimer = null, pendingRestore = null;
@@ -3510,6 +3801,19 @@
         stage.classList.toggle("pv916", state.previewAspect === "9:16");
         stage.classList.toggle("pv169", state.previewAspect === "16:9");
         markSeg("pvAspectSeg", "pv", state.previewAspect);
+        /* Speed settings restore with the project (older snapshots
+           simply leave the current values alone). */
+        if(SPEED_RATES.indexOf(Number(snap.previewSpeed)) >= 0){
+          state.previewSpeed = Number(snap.previewSpeed);
+          var psSel = $("previewSpeedSel"); if(psSel) psSel.value = String(state.previewSpeed);
+          applyPreviewSpeed();
+        }
+        if(SPEED_RATES.indexOf(Number(snap.shortPreviewSpeed)) >= 0){
+          state.shortPreviewSpeed = Number(snap.shortPreviewSpeed);
+          var spsSel = $("shortPreviewSpeedSel"); if(spsSel) spsSel.value = String(state.shortPreviewSpeed);
+          applyShortPreviewSpeed();
+        }
+        if(SPEED_RATES.indexOf(Number(snap.exportSpeed)) >= 0) setExportSpeed(Number(snap.exportSpeed));
         updateSafeZone();
         renderCues(); updateOverlay();
         updateShortSubInfo();
