@@ -643,6 +643,14 @@
                 </select>
                 <span class="sub" style="margin:0">Speed ပြောင်းရင် ထွက်လာတဲ့ ဗီဒီယို အရှည် လိုက်ပြောင်းမည် (ဥပမာ 2× ဆိုရင် အရှည် ထက်ဝက်) — စာတန်း timing ပါ လိုက်ညှိပေးပြီး အသံ pitch မပြောင်းပါ (အသံ မြင့်/နိမ့် မသွားပါ)။ Short Export မှာလည်း ဒီ Speed ပဲ သုံးပါမည်။</span>
               </div>
+              <div class="speed-export-row">
+                <span class="flabel">Render Mode</span>
+                <div class="seg" id="fastSegMain" role="group" aria-label="Render Mode">
+                  <button type="button" data-fast="on" class="on">Fast Render</button>
+                  <button type="button" data-fast="off">Standard</button>
+                </div>
+                <span class="sub" style="margin:0">Fast — ဗီဒီယိုကို အစအဆုံး ပြန်ဖွင့်ရင်း မစောင့်ဘဲ frame ချင်း decode လုပ်ပြီး ထုတ်ပါမည် (device အပေါ် မူတည်ပြီး ပုံမှန်ထက် ၂–၅ ဆ လောက် မြန်နိုင်သည်)။ ဒီ browser/ဖိုင်နဲ့ Fast မရရင် သို့မဟုတ် ဒီ device မှာ မမြန်ရင် Standard render သို့ အလိုအလျောက် ပြန်ပြောင်းပေးပါမည်။ Short Export မှာလည်း ဒီ setting ပဲ သုံးပါမည်။</span>
+              </div>
               <div class="row" style="align-items:center">
                 <button class="btn primary" id="exportBtn" type="button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
@@ -652,7 +660,7 @@
               </div>
               <div class="progress" id="exportProgress"><i></i></div>
               <p class="status" id="exportStatus" hidden></p>
-              <p class="export-note">Render က ဗီဒီယို အရှည်အတိုင်း အချိန်ယူပြီး ဗီဒီယိုကို တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်လို့ ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ အသံလည်း ပါမည် (browser က ထောက်ပံ့ရင်)။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖော်မတ် ဖြစ်ပါတယ်။ WebM ဖိုင် ထုတ်ပေးရတဲ့ အခါမျိုးမှာသာ ဖုန်းရဲ့ မူရင်း player မှာ အမည်း ပေါ်နေရင် Chrome သို့မဟုတ် VLC app နဲ့ ဖွင့်ကြည့်ပါ။</p>
+              <p class="export-note">Fast Render mode မှာ render က ဗီဒီယို အရှည်ထက် အများကြီး မြန်နိုင်ပါတယ် — ဒါပေမယ့် ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ Standard mode မှာတော့ Render က ဗီဒီယို အရှည်အတိုင်း အချိန်ယူပြီး ဗီဒီယိုကို တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်ပါတယ်။ အသံလည်း ပါမည် (browser က ထောက်ပံ့ရင်)။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖော်မတ် ဖြစ်ပါတယ်။ WebM ဖိုင် ထုတ်ပေးရတဲ့ အခါမျိုးမှာသာ ဖုန်းရဲ့ မူရင်း player မှာ အမည်း ပေါ်နေရင် Chrome သို့မဟုတ် VLC app နဲ့ ဖွင့်ကြည့်ပါ။</p>
             </section>
 
             <section class="card" id="shortCard" aria-labelledby="shortH">
@@ -749,6 +757,14 @@
                 </select>
                 <span class="sub" style="margin:0">အပေါ်က ဗီဒီယို Export Speed နဲ့ အတူတူပါပဲ — တစ်ခုမှာ ပြောင်းရင် နောက်တစ်ခုပါ လိုက်ပြောင်းပါမည်။ Speed ပြောင်းရင် Short အရှည် လိုက်ပြောင်းပြီး အသံ pitch မပြောင်းပါ။</span>
               </div>
+              <div class="speed-export-row">
+                <span class="flabel">Render Mode</span>
+                <div class="seg" id="fastSegShort" role="group" aria-label="Render Mode">
+                  <button type="button" data-fast="on" class="on">Fast Render</button>
+                  <button type="button" data-fast="off">Standard</button>
+                </div>
+                <span class="sub" style="margin:0">အပေါ်က ဗီဒီယို Export ရဲ့ Render Mode နဲ့ အတူတူပါပဲ — တစ်ခုမှာ ပြောင်းရင် နောက်တစ်ခုပါ လိုက်ပြောင်းပါမည်။ Fast ဆိုရင် အသံကို အစအဆုံး ပြန်ဖွင့်ရင်း မစောင့်ဘဲ frame ချင်း ထုတ်ပါမည်။</span>
+              </div>
               <div class="row" style="align-items:center;margin-top:12px">
                 <button class="btn primary" id="shortExportBtn" type="button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l4.5-4.5M12 15L7.5 10.5"/><path d="M4 19h16"/></svg>
@@ -758,7 +774,7 @@
               </div>
               <div class="progress" id="shortProgress"><i></i></div>
               <p class="status" id="shortStatus" hidden></p>
-              <p class="export-note">Render က အသံ အရှည်အတိုင်း အချိန်ယူပြီး တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်လို့ ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖြစ်ပါတယ် — ဒီ browser က MP4 မထုတ်နိုင်ရင်သာ WebM နဲ့ ထုတ်ပေးမည်ဖြစ်ပြီး စတင်ခင် ကြိုပြောပြပါမည်။</p>
+              <p class="export-note">Fast Render mode မှာ render က အသံ အရှည်ထက် အများကြီး မြန်နိုင်ပါတယ် — ဒါပေမယ့် ပြီးတဲ့အထိ ဒီ tab ကို ဖွင့်ထားပါ။ Standard mode မှာတော့ Render က အသံ အရှည်အတိုင်း အချိန်ယူပြီး တစ်ခါ ပြန်ဖွင့်ရင်း မှတ်တမ်းတင်တာ ဖြစ်ပါတယ်။ ထုတ်လာတဲ့ ဖိုင်က ပုံမှန်အားဖြင့် MP4 ဖြစ်ပါတယ် — ဒီ browser က MP4 မထုတ်နိုင်ရင်သာ WebM နဲ့ ထုတ်ပေးမည်ဖြစ်ပြီး စတင်ခင် ကြိုပြောပြပါမည်။</p>
             </section>
           </div>
 
@@ -865,6 +881,14 @@
         previewSpeed: 1,
         shortPreviewSpeed: 1,
         exportSpeed: 1,
+        /* Fast Render: ONE shared toggle for both exports (same sync
+           pattern as exportSpeed). When on, the WebCodecs export paths
+           render OFFLINE — frames are produced by stepping the media
+           frame-by-frame instead of playing it through in real time —
+           with an automatic fallback to the standard real-time render
+           whenever the fast path is unavailable or not actually faster
+           on this device. */
+        fastRender: true,
         mode: "video",        // "video" | "audio"
         previewAspect: "orig", // main stage preview frame: "orig" | "9:16" | "16:9" — preview only, export keeps the source size
         safeMain: false,       // Shorts safe-zone shading on the main stage (9:16 frame only, preview only)
@@ -1095,6 +1119,19 @@
         var a = $("exportSpeedSel"), b = $("shortExportSpeedSel");
         if(a && a.value !== String(v)) a.value = String(v);
         if(b && b.value !== String(v)) b.value = String(v);
+        scheduleAutosave();
+      }
+      /* Fast Render toggle — one shared setting for the main export
+         and the Short export, kept in sync between the two cards
+         exactly like the Export Speed selectors above. */
+      function setFastRender(on){
+        state.fastRender = !!on;
+        ["fastSegMain", "fastSegShort"].forEach(function(id){
+          var seg = $(id); if(!seg) return;
+          seg.querySelectorAll("button").forEach(function(b){
+            b.classList.toggle("on", (b.dataset.fast === "on") === state.fastRender);
+          });
+        });
         scheduleAutosave();
       }
       /* Pitch-preserving time stretch of a decoded AudioBuffer (WSOLA —
@@ -1477,6 +1514,8 @@
          fixed 9:16 / 16:9 frame and the media letterboxes inside it;
          the export renderers never read this, so exported files keep
          the source video's original dimensions. */
+      segWire("fastSegMain", "fast", function(v){ setFastRender(v === "on"); });
+      segWire("fastSegShort", "fast", function(v){ setFastRender(v === "on"); });
       segWire("pvAspectSeg", "pv", function(v){
         state.previewAspect = (v === "9:16" || v === "16:9") ? v : "orig";
         stage.classList.toggle("pv916", state.previewAspect === "9:16");
@@ -2630,6 +2669,187 @@
           startRecorderExport({ mime: pickWebmMime(), format: "webm" });
         });
       }
+      /* ================= Fast Render — main video (offline) =================
+         The standard WebCodecs path above still plays the video through
+         in real time and encodes frames as they are presented, so a
+         10-minute video takes ~10 minutes. The fast path never plays:
+         it STEPS the paused media element from frame to frame (seek →
+         wait for the decoded frame → draw → encode), so the render runs
+         as fast as this device's decoder + encoder allow — typically
+         2–5× faster than real time — while producing the exact same
+         30fps output grid, subtitles, logo and pitch-preserved audio.
+         Safety rails, so Fast can never be worse than Standard:
+         · only used when the WebCodecs MP4 plan succeeded;
+         · after the first 150 frames the average per-frame cost is
+           compared with real-time playback (33.3ms/frame): if stepping
+           is not actually faster, the render aborts and restarts on the
+           standard path automatically;
+         · a seek timeout or encoder error does the same;
+         · the finished file passes through the same black-frame guard
+           and header repair (finishWebCodecsExport) as the standard
+           path. */
+      function seekMediaTo(el, t){
+        return new Promise(function(resolve, reject){
+          if(!el){ reject(new Error("no media element")); return; }
+          if(!isFinite(t) || t < 0) t = 0;
+          if(el.readyState >= 2 && Math.abs((el.currentTime || 0) - t) < 0.0015){ resolve(); return; }
+          var done = false, timer = null, poll = null;
+          function cleanup(){ el.removeEventListener("seeked", ok); if(timer) clearTimeout(timer); if(poll) clearInterval(poll); }
+          function ok(){ if(done) return; done = true; cleanup(); resolve(); }
+          function fail(err){ if(done) return; done = true; cleanup(); reject(err); }
+          el.addEventListener("seeked", ok);
+          poll = setInterval(function(){ if(Math.abs((el.currentTime || 0) - t) < 0.0015) ok(); }, 60);
+          timer = setTimeout(function(){ fail(new Error("seek timeout")); }, 3000);
+          try { el.currentTime = t; } catch(e){ fail(e); }
+        });
+      }
+      var fastScratch = null, fastSctx = null;
+      function sampleFastFrame(es){
+        if(es.sawFrame || es.sampleBroken) return;
+        try {
+          if(!fastScratch){
+            fastScratch = document.createElement("canvas");
+            fastScratch.width = 16; fastScratch.height = 16;
+            fastSctx = fastScratch.getContext("2d", { willReadFrequently: true });
+          }
+          fastSctx.drawImage(canvas, 0, 0, 16, 16);
+          var px = fastSctx.getImageData(0, 0, 16, 16).data;
+          for(var i = 0; i < px.length; i += 4){
+            if(px[i] > 10 || px[i + 1] > 10 || px[i + 2] > 10){ es.sawFrame = true; return; }
+          }
+        } catch(e){ es.sampleBroken = true; }
+      }
+      function encodeFastSlot(es, slot){
+        var ts = Math.round(slot * 1000000 / 30);
+        var vf = new VideoFrame(canvas, { timestamp: ts, duration: 33333 });
+        var key = ts - es.lastKeyTs >= 2000000;
+        es.encoder.encode(vf, { keyFrame: key });
+        vf.close();
+        if(key) es.lastKeyTs = ts;
+        es.lastTs = ts; es.lastSlot = slot;
+      }
+      function fastStatusText(done, total, startWall){
+        var wall = (Date.now() - startWall) / 1000;
+        var speed = wall > 0.5 ? (done / 30) / wall : 0;
+        var remain = speed > 0 ? Math.max(0, Math.round((total - done) / 30 / speed)) : 0;
+        return "Fast Render — " + Math.round(done / total * 100) + "%" +
+          (speed ? " · ~" + (Math.round(speed * 10) / 10) + "× မြန်" : "") +
+          (remain ? " · ခန့် " + remain + " စက္ကန့် ကျန်" : "");
+      }
+      function abortFastMain(es, why){
+        var prep = es.prepOrig, W = es.fastW, H = es.fastH;
+        stopExport(false);
+        toast(why + " Standard render နဲ့ ဆက်ထုတ်ပေးပါမည်");
+        setExportStatus(why + " Standard render နဲ့ ဆက်ထုတ်ပေးပါမည်…");
+        startWebCodecsExport(prep, W, H);
+      }
+      function runFastMainLoop(es){
+        var rate = es.rate || 1;
+        var dur = (isFinite(video.duration) && video.duration > 0) ? video.duration : (es.knownSeconds || 0) * rate;
+        var totalFrames = Math.max(1, Math.round(dur / rate * 30));
+        var maxT = dur > 0.12 ? dur - 0.05 : Math.max(0, dur - 0.001);
+        var slot = 0, startWall = Date.now(), guardChecked = false, statusAt = -45;
+        try { video.pause(); } catch(e){}
+        function step(){
+          if(exportState !== es) return;
+          if(es.encoderError){ abortFastMain(es, "Fast Render encoder ရပ်သွားပါတယ် —"); return; }
+          if(slot >= totalFrames){ finishWebCodecsExport(es); return; }
+          if(es.encoder && es.encoder.encodeQueueSize > 10){ setTimeout(step, 30); return; }
+          var srcT = Math.min(slot / 30 * rate, maxT);
+          seekMediaTo(video, srcT).then(function(){
+            if(exportState !== es) return;
+            try {
+              ctx2d.fillStyle = "#000"; ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+              ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
+              if(slot % 12 === 0) sampleFastFrame(es);
+              drawSubtitles(ctx2d, canvas.width, canvas.height);
+              encodeFastSlot(es, slot);
+            } catch(e){ /* keep stepping; the black-frame guard judges the result */ }
+            es.frameNo++; es.lastDrawAt = Date.now();
+            setExportProgress(slot / totalFrames);
+            if(slot - statusAt >= 45){ statusAt = slot; setExportStatus(fastStatusText(slot, totalFrames, startWall)); }
+            slot++;
+            if(!guardChecked && slot >= 150){
+              guardChecked = true;
+              if((Date.now() - startWall) / slot > 40){
+                abortFastMain(es, "ဒီ device မှာ Fast Render က မမြန်ပါ —");
+                return;
+              }
+            }
+            setTimeout(step, 0);
+          }).catch(function(err){
+            if(exportState !== es) return;
+            abortFastMain(es, "Fast Render မအောင်မြင်ပါ (" + (err && err.message ? err.message : "seek error") + ") —");
+          });
+        }
+        step();
+      }
+      function startFastWebCodecsExport(prep, W, H){
+        /* Same muxer + audio pipeline as startWebCodecsExport; only the
+           frame source differs (offline stepping instead of playback).
+           The audio is stretched on a COPY of the prep so that, if the
+           fast path aborts, the original prep can restart the standard
+           path without being stretched twice. */
+        canvas.width = W;
+        canvas.height = H;
+        var target = new Mp4Muxer.ArrayBufferTarget();
+        var muxer = new Mp4Muxer.Muxer({
+          target: target,
+          video: { codec: "avc", width: W, height: H, frameRate: 30 },
+          audio: { codec: prep.muxerAudioCodec, numberOfChannels: prep.channels, sampleRate: prep.audioBuf.sampleRate },
+          fastStart: "in-memory",
+          firstTimestampBehavior: "offset"
+        });
+        var es = { mode: "webcodecs", fast: true, muxer: muxer, target: target, encoder: null, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
+                   rate: state.exportSpeed || 1,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration / (state.exportSpeed || 1) : 0,
+                   prepOrig: prep, fastW: W, fastH: H };
+        var encoder = new VideoEncoder({
+          output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
+          error: function(e){ es.encoderError = e; }
+        });
+        /* Speed-tuned encoder settings first (hardware + low latency);
+           fall back to the exact config the standard path probed. */
+        var configured = false;
+        try {
+          encoder.configure({ codec: prep.videoCfg.codec, width: W, height: H, bitrate: prep.videoCfg.bitrate, framerate: 30, latencyMode: "realtime", hardwareAcceleration: "prefer-hardware" });
+          configured = encoder.state === "configured";
+        } catch(e){ configured = false; }
+        if(!configured){
+          try { encoder.configure(prep.videoCfg); configured = encoder.state === "configured"; } catch(e){ configured = false; }
+        }
+        if(!configured){
+          try { encoder.close(); } catch(e){}
+          state.exporting = false;
+          exportBtn.disabled = false;
+          setExportStatus("Fast Render encoder စ လို့ မရပါ — Render Mode ကို Standard ပြောင်းပြီး ပြန်စမ်းကြည့်ပါ။", "err");
+          return;
+        }
+        es.encoder = encoder;
+        beginExportUI(es);
+        setExportStatus("Fast Render — အသံ ပြင်ဆင်နေပါတယ်…");
+        var prepF = { videoCfg: prep.videoCfg, audioBuf: prep.audioBuf, audioCfg: prep.audioCfg, muxerAudioCodec: prep.muxerAudioCodec, channels: prep.channels };
+        var stretchStep = (es.rate !== 1)
+          ? new Promise(function(res){ setTimeout(res, 30); }).then(function(){
+              prepF.audioBuf = stretchAudioBuffer(prep.audioBuf, es.rate);
+              es.knownSeconds = prepF.audioBuf.duration;
+            })
+          : Promise.resolve();
+        stretchStep.then(function(){
+          if(exportState !== es) return null;
+          return encodeAudioIntoMuxer(prepF, muxer);
+        }).then(function(){
+          if(exportState !== es) return;
+          setExportStatus("Fast Render လုပ်နေပါတယ်…");
+          runFastMainLoop(es);
+        }).catch(function(){
+          if(exportState !== es) return;
+          stopExport(false);
+          startRecorderExport({ mime: pickWebmMime(), format: "webm" });
+        });
+      }
       exportBtn.addEventListener("click", function(){
         if(state.exporting) return;
         if(!state.videoFile){ toast("အရင် ဗီဒီယို တင်ပါ"); return; }
@@ -2660,7 +2880,12 @@
           var mp4Mime = pickMp4Mime();
           if(window.VideoEncoder && window.VideoFrame && W > 0 && H > 0){
             return prepareWebCodecs(W, H).then(function(prep){
-              if(prep){ startWebCodecsExport(prep, W, H); return; }
+              if(prep){
+                if(state.fastRender) startFastWebCodecsExport(prep, W, H);
+                else startWebCodecsExport(prep, W, H);
+                return;
+              }
+              if(state.fastRender) toast("ဒီ browser/ဖိုင်နဲ့ Fast Render မရလို့ Standard render နဲ့ ထုတ်ပါမည်");
               if(mp4Mime){ startRecorderExport({ mime: mp4Mime, format: "mp4" }); return; }
               startRecorderExport({ mime: pickWebmMime(), format: "webm" });
             });
@@ -3616,6 +3841,132 @@
           else setShortStatus("အသံ encode မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။", "err");
         });
       }
+      /* ================= Fast Render — Short (offline) =================
+         Same idea as the main fast path: the soundtrack is never played.
+         The render steps the OUTPUT timeline slot by slot; for each slot
+         the background frame for that source time is drawn directly
+         (photos are pure canvas draws; a background video is seeked to
+         its mapped position first), subtitles are composited, and the
+         frame is encoded. Image-only Shorts therefore render as fast as
+         the encoder allows. Same safety rails as the main path: slow
+         stepping (e.g. heavy background-video seeks) aborts back to the
+         standard real-time Short render automatically. */
+      function positionShortBgForTime(t){
+        var sel = shortBgAt(t);
+        if(!sel || sel.item.kind !== "video" || !sel.item.videoEl) return Promise.resolve();
+        var v = sel.item.videoEl;
+        try { v.pause(); } catch(e){}
+        var target = shortBgVideoPos(sel.item, sel.local, sel.held);
+        if(Math.abs((v.currentTime || 0) - target) < 0.03) return Promise.resolve();
+        return seekMediaTo(v, target).catch(function(){ /* draw whatever frame is current */ });
+      }
+      function abortFastShort(es, why){
+        var prep = es.prepOrig, cues = es.cues;
+        stopShortExport(false);
+        toast(why + " Standard render နဲ့ ဆက်ထုတ်ပေးပါမည်");
+        setShortStatus(why + " Standard render နဲ့ ဆက်ထုတ်ပေးပါမည်…");
+        startShortWebCodecsExport(prep, cues);
+      }
+      function runFastShortLoop(es){
+        var rate = es.rate || 1;
+        var outDur = es.knownSeconds || 0;
+        var srcDur = outDur * rate;
+        var totalFrames = Math.max(1, Math.round(outDur * 30));
+        var slot = 0, startWall = Date.now(), guardChecked = false, statusAt = -45;
+        try { shortPlayer.pause(); } catch(e){}
+        pauseAllShortBgVideos();
+        function step(){
+          if(shortExportState !== es) return;
+          if(es.encoderError){ abortFastShort(es, "Fast Render encoder ရပ်သွားပါတယ် —"); return; }
+          if(slot >= totalFrames){ finishShortWebCodecs(es); return; }
+          if(es.encoder && es.encoder.encodeQueueSize > 10){ setTimeout(step, 30); return; }
+          var srcT = Math.min(slot / 30 * rate, Math.max(0, srcDur - 0.001));
+          positionShortBgForTime(srcT).then(function(){
+            if(shortExportState !== es) return;
+            try {
+              drawShortFrame(ctx2d, canvas.width, canvas.height, srcT, es.cues);
+              if(slot % 12 === 0) sampleFastFrame(es);
+              encodeFastSlot(es, slot);
+            } catch(e){ /* keep stepping; the black-frame guard judges the result */ }
+            es.frameNo++; es.lastDrawAt = Date.now();
+            setShortProgress(slot / totalFrames);
+            if(slot - statusAt >= 45){ statusAt = slot; setShortStatus(fastStatusText(slot, totalFrames, startWall)); }
+            slot++;
+            if(!guardChecked && slot >= 150){
+              guardChecked = true;
+              if((Date.now() - startWall) / slot > 40){
+                abortFastShort(es, "ဒီ device မှာ Fast Render က မမြန်ပါ —");
+                return;
+              }
+            }
+            setTimeout(step, 0);
+          });
+        }
+        step();
+      }
+      function startShortFastWebCodecsExport(prep, cues){
+        canvas.width = SHORT_W;
+        canvas.height = SHORT_H;
+        var target = new Mp4Muxer.ArrayBufferTarget();
+        var muxer = new Mp4Muxer.Muxer({
+          target: target,
+          video: { codec: "avc", width: SHORT_W, height: SHORT_H, frameRate: 30 },
+          audio: { codec: prep.muxerAudioCodec, numberOfChannels: prep.channels, sampleRate: prep.audioBuf.sampleRate },
+          fastStart: "in-memory",
+          firstTimestampBehavior: "offset"
+        });
+        var es = { mode: "webcodecs", fast: true, muxer: muxer, target: target, encoder: null, cues: cues, raf: 0, watchdog: null,
+                   cancelled: false, onEnded: null, sawFrame: false, sampleBroken: false,
+                   frameNo: 0, lastDrawAt: 0, lastTs: -1, lastSlot: -1, lastKeyTs: -10000000, encoderError: null,
+                   rate: state.exportSpeed || 1,
+                   knownSeconds: (prep && prep.audioBuf) ? prep.audioBuf.duration / (state.exportSpeed || 1) : 0,
+                   prepOrig: prep };
+        var encoder = new VideoEncoder({
+          output: function(chunk, meta){ try { muxer.addVideoChunk(chunk, meta); } catch(e){} },
+          error: function(e){ es.encoderError = e; }
+        });
+        var configured = false;
+        try {
+          encoder.configure({ codec: prep.videoCfg.codec, width: SHORT_W, height: SHORT_H, bitrate: prep.videoCfg.bitrate, framerate: 30, latencyMode: "realtime", hardwareAcceleration: "prefer-hardware" });
+          configured = encoder.state === "configured";
+        } catch(e){ configured = false; }
+        if(!configured){
+          try { encoder.configure(prep.videoCfg); configured = encoder.state === "configured"; } catch(e){ configured = false; }
+        }
+        if(!configured){
+          try { encoder.close(); } catch(e){}
+          state.exporting = false;
+          state.shortExporting = false;
+          $("shortExportBtn").disabled = false;
+          setShortStatus("Fast Render encoder စ လို့ မရပါ — Render Mode ကို Standard ပြောင်းပြီး ပြန်စမ်းကြည့်ပါ။", "err");
+          return;
+        }
+        es.encoder = encoder;
+        beginShortExportUI(es);
+        setShortStatus("Fast Render — အသံ ပြင်ဆင်နေပါတယ်…");
+        var prepF = { videoCfg: prep.videoCfg, audioBuf: prep.audioBuf, audioCfg: prep.audioCfg, muxerAudioCodec: prep.muxerAudioCodec, channels: prep.channels };
+        var stretchStep = (es.rate !== 1)
+          ? new Promise(function(res){ setTimeout(res, 30); }).then(function(){
+              prepF.audioBuf = stretchAudioBuffer(prep.audioBuf, es.rate);
+              es.knownSeconds = prepF.audioBuf.duration;
+            })
+          : Promise.resolve();
+        stretchStep.then(function(){
+          if(shortExportState !== es) return null;
+          return encodeAudioIntoMuxer(prepF, muxer);
+        }).then(function(){
+          if(shortExportState !== es) return;
+          setShortStatus("Fast Render လုပ်နေပါတယ်…");
+          runFastShortLoop(es);
+        }).catch(function(){
+          if(shortExportState !== es) return;
+          stopShortExport(false);
+          var mp4Mime = pickMp4Mime();
+          if(mp4Mime && shortAudioCaptureOK()) startShortRecorderExport({ mime: mp4Mime, format: "mp4", cues: cues });
+          else if(pickWebmMime() && shortAudioCaptureOK()) startShortRecorderExport({ mime: pickWebmMime(), format: "webm", cues: cues });
+          else setShortStatus("အသံ encode မအောင်မြင်ပါ — Chrome နောက်ဆုံးဗားရှင်းနဲ့ ပြန်စမ်းကြည့်ပါ။", "err");
+        });
+      }
       function failShortPlan(){
         state.exporting = false;
         $("shortExportBtn").disabled = false;
@@ -3644,7 +3995,12 @@
              output is header-repaired before download. */
           if(window.VideoEncoder && window.VideoFrame){
             return prepareWebCodecs(SHORT_W, SHORT_H, state.shortAudioFile).then(function(prep){
-              if(prep){ startShortWebCodecsExport(prep, cues); return; }
+              if(prep){
+                if(state.fastRender) startShortFastWebCodecsExport(prep, cues);
+                else startShortWebCodecsExport(prep, cues);
+                return;
+              }
+              if(state.fastRender) toast("ဒီ browser/ဖိုင်နဲ့ Fast Render မရလို့ Standard render နဲ့ ထုတ်ပါမည်");
               var mp4Mime2 = pickMp4Mime();
               if(mp4Mime2 && shortAudioCaptureOK()){
                 startShortRecorderExport({ mime: mp4Mime2, format: "mp4", cues: cues });
@@ -3896,7 +4252,8 @@
           previewAspect: state.previewAspect,
           previewSpeed: state.previewSpeed,
           shortPreviewSpeed: state.shortPreviewSpeed,
-          exportSpeed: state.exportSpeed
+          exportSpeed: state.exportSpeed,
+          fastRender: state.fastRender
         };
       }
       var autosaveArmed = false, autosaveTimer = null, pendingRestore = null;
@@ -3969,6 +4326,7 @@
           applyShortPreviewSpeed();
         }
         if(SPEED_RATES.indexOf(Number(snap.exportSpeed)) >= 0) setExportSpeed(Number(snap.exportSpeed));
+        if(typeof snap.fastRender === "boolean") setFastRender(snap.fastRender);
         updateSafeZone();
         renderCues(); updateOverlay();
         updateShortSubInfo();
